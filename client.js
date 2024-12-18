@@ -22,7 +22,7 @@ function displayData(weeklyData) {
     }
     console.log("tableData", tableData)
     new Tabulator("#table-" + safeTargetDateId, {
-      data: tableData.reverse(),
+      data: tableData,
       columns: [
 //        { title: "Sunday", field: "sunday", sorter:"date", formatter:"datetime", formatterParams:{outputFormat:"YYYY-MM-DD"} },
         { title: "Sunday", field: "sunday" },
