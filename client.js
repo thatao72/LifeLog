@@ -23,8 +23,9 @@ function displayData(weeklyData) {
     new Tabulator("#table-" + safeTargetDateId, {
       data: tableData.reverse(),
       columns: [
-        { title: "Sunday", field: "sunday", sorter:"date", formatter:"datetime", formatterParams:{outputFormat:"YYYY-MM-DD"} },
-        { title: "Countdown", field: "countdown" },
+//        { title: "Sunday", field: "sunday", sorter:"date", formatter:"datetime", formatterParams:{outputFormat:"YYYY-MM-DD"} },
+        { title: "Sunday", field: "sunday" },
+        { title: "Countdown", field: "countdown", sorter:"number" },
         { title: "Activity", field: "activity", formatter: "html" },
         { title: "Events", field: "events", formatter: "html" }
       ],
