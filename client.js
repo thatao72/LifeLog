@@ -31,17 +31,3 @@ function displayData(weeklyData) {
     });
   }
 }
-
-function onFailure(error) {
-  console.error("Error from server:", error);
-  alert("An error occurred. Please check the console.");
-}
-
-// Only ONE event listener!
-document.addEventListener('DOMContentLoaded', function() {
-  console.log("DOM content loaded");
-  google.script.run
-    .withSuccessHandler(displayData)
-    .withFailureHandler(onFailure)
-    .getWeeklyData();
-});
