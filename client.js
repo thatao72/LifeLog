@@ -1,23 +1,16 @@
-google.script.run
-  .withSuccessHandler(displayData)
-  .withFailureHandler(onFailure)
-  .getWeeklyData();
-
 function displayData(weeklyData) {
-  console.log("displayData called!");
-  window.addEventListener('DOMContentLoaded', function() {
-    console.log("window load event");
-    for (const targetDateStr in weeklyData) {
-      console.log("Inside for loop");
-      const safeTargetDateId = String(targetDateStr).replace(/\//g, '-');
+  console.log("displayData called!", weeklyData); // Confirm function call
+  console.log("weeklyData", weeklyData)
+  for (const targetDateStr in weeklyData) {
+      console.log("targetDateStr", targetDateStr)
+      const safeTargetDateId = targetDateStr.replace(/\//g, '-');
       const targetData = weeklyData[targetDateStr];
       const tableData = [];
       for (const sundayStr in targetData.weeks) {
         const week = targetData.weeks[sundayStr];
         tableData.push(week.tableRow);
       }
-      
-      console.log("#table-" + safeTargetDateId);
+
       new Tabulator("#table-" + safeTargetDateId, {
         data: tableData.reverse(),
         columns: [
@@ -28,7 +21,6 @@ function displayData(weeklyData) {
         ],
       });
     }
-  });
 }
 
 function onFailure(error) {
@@ -36,3 +28,12 @@ function onFailure(error) {
   // Optionally display an error message to the user
   alert("An error occurred. Please check the console.");
 }
+
+// Set up the event listener *outside* of displayData
+window.addEventListener('load', function() {
+  console.log("window load event");
+  google.script.run
+    .withSuccessHandler(displayData)
+    .withFailureHandler(onFailure)
+    .getWeeklyData();
+});
