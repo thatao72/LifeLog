@@ -1,0 +1,5 @@
+{
+    "name": "@thatao72/lifelog",
+    "version": "1.0.3",
+    "main": "LifeLog/client.js"
+}
