@@ -1,4 +1,6 @@
+console.log("client.js is loaded!");
 const weeklyData = google.script.run.withSuccessHandler(displayData).getWeeklyData();
+console.log("weeklyData is ready!");
 
 function displayData(weeklyData) {
   window.addEventListener('DOMContentLoaded', function() {
@@ -8,6 +10,7 @@ function displayData(weeklyData) {
       const tableData = [];
       for (const sundayStr in targetData.weeks) {
         const week = targetData.weeks[sundayStr];
+        console.log("week contents is taken " + week.tableRow)
         tableData.push(week.tableRow);
       }
       
