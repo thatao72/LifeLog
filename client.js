@@ -1,6 +1,7 @@
 function displayData(weeklyData) {
-  console.log("displayData called!" + JSON.stringify(weeklyData));
+  console.log("displayData called!");
   const tablesDiv = document.getElementById("tables"); // Get the tables container
+  console.log("sample output", weeklyData["10/6/2024"].weeks["10/6/2024"].tableRow.sunday);
   for (const targetDateStr in weeklyData) {
     console.log("targetDateStr", targetDateStr);
     const safeTargetDateId = targetDateStr.replace(/\//g, '-');
