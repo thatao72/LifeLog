@@ -1,4 +1,4 @@
-/* const weeklyData = google.script.run.withSuccessHandler(displayData).getWeeklyData();
+const weeklyData = google.script.run.withSuccessHandler(displayData).getWeeklyData();
 
 function displayData(weeklyData) {
   window.addEventListener('DOMContentLoaded', function() {
@@ -24,6 +24,3 @@ function displayData(weeklyData) {
     }
   });
 }
- */
-
-console.log("client.js is loaded!");
