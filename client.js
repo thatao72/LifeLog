@@ -1,6 +1,6 @@
 google.script.run
   .withSuccessHandler(displayData)
-  .withFailueHandler(onFailure)
+  .withFailureHandler(onFailure)
   .getWeeklyData();
 
 function displayData(weeklyData) {
