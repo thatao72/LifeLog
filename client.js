@@ -1,5 +1,5 @@
 function displayData(weeklyData) {
-  console.log("displayData called!", weeklyData);
+  console.log("displayData called!", JSON.stringify(weeklyData));
   const tablesDiv = document.getElementById("tables"); // Get the tables container
   for (const targetDateStr in weeklyData) {
     console.log("targetDateStr", targetDateStr);
