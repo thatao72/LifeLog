@@ -1,16 +1,27 @@
 function displayData(weeklyData) {
-  console.log("displayData called!", weeklyData); // Confirm function call
-  console.log("weeklyData", weeklyData)
-  for (const targetDateStr in weeklyData) {
-      console.log("targetDateStr", targetDateStr)
+  console.log("displayData called!", weeklyData);
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM is ready!");
+    const tablesDiv = document.getElementById("tables"); // Get the tables container
+    for (const targetDateStr in weeklyData) {
+      console.log("targetDateStr", targetDateStr);
       const safeTargetDateId = targetDateStr.replace(/\//g, '-');
       const targetData = weeklyData[targetDateStr];
+
+      // Create the h2 and div elements dynamically
+      const h2 = document.createElement("h2");
+      h2.textContent = targetData.eventName;
+      const tableDiv = document.createElement("div");
+      tableDiv.id = "table-" + safeTargetDateId;
+      tablesDiv.appendChild(h2);
+      tablesDiv.appendChild(tableDiv);
+
       const tableData = [];
       for (const sundayStr in targetData.weeks) {
         const week = targetData.weeks[sundayStr];
         tableData.push(week.tableRow);
       }
-
+      console.log("tableData", tableData)
       new Tabulator("#table-" + safeTargetDateId, {
         data: tableData.reverse(),
         columns: [
@@ -21,17 +32,15 @@ function displayData(weeklyData) {
         ],
       });
     }
+  });
 }
 
 function onFailure(error) {
-  console.error("Error from server:", error); // Log the error
-  // Optionally display an error message to the user
+  console.error("Error from server:", error);
   alert("An error occurred. Please check the console.");
 }
 
-// Set up the event listener *outside* of displayData
 window.addEventListener('load', function() {
-  console.log("window load event");
   google.script.run
     .withSuccessHandler(displayData)
     .withFailureHandler(onFailure)
