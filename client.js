@@ -1,7 +1,7 @@
 const weeklyData = google.script.run.withSuccessHandler(displayData).getWeeklyData();
 
 function displayData(weeklyData) {
-  window.addEventListener('load', function() {
+  window.addEventListener('DOMContentLoaded', function() {
     for (const targetDateStr in weeklyData) {
       const safeTargetDateId = String(targetDateStr).replace(/\//g, '-');
       const targetData = weeklyData[targetDateStr];
