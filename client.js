@@ -11,6 +11,7 @@ function displayData(weeklyData) {
         tableData.push(week.tableRow);
       }
       
+      console.log("#table-" + safeTargetDateId);
       new Tabulator("#table-" + safeTargetDateId, {
         data: tableData.reverse(),
         columns: [
