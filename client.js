@@ -13,12 +13,6 @@ function displayData(weeklyData) {
     tablesDiv.appendChild(h2);
     tablesDiv.appendChild(tableDiv);
 
-/*     const tableData = [];
-    for (const sundayStr in targetData.weeks) {
-      const week = targetData.weeks[sundayStr];
-      tableData.push(week.tableRow);
-    }
- */
     const tableData = [];
     for (const sundayStr in targetData.weeks) {
       const week = targetData.weeks[sundayStr];
@@ -29,7 +23,6 @@ function displayData(weeklyData) {
     new Tabulator("#table-" + safeTargetDateId, {
       data: tableData,
       columns: [
-//        { title: "Sunday", field: "sunday", sorter:"date", formatter:"datetime", formatterParams:{outputFormat:"YYYY-MM-DD"} },
         { title: "Sunday", field: "sunday" },
         { title: "Countdown", field: "countdown", sorter:"number" },
         {
