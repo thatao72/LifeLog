@@ -46,6 +46,8 @@ function displayData(weeklyData) {
             if (typeof value !== 'number' || isNaN(value)) return ""; // Handle invalid values
             const maxValue = findMaxValue(weeklyData); // Find the maximum value for scaling
             const width = (value / maxValue) * 100; // Calculate percentage width
+            console.log("totalActivity width: ", width);
+            console.log("totalActivity value: ", value)
             return `<div class="bar-container"><div class="bar" style="width: ${width}%;"></div><span class="bar-label">${value.toFixed(2)}</span></div>`;
           }
         },        
