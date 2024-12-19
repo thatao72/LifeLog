@@ -22,7 +22,7 @@ function displayData(weeklyData) {
     console.log("tableData", tableData)
     new Tabulator("#table-" + safeTargetDateId, {
       data: tableData,
-      layout: "fitColumns",
+      layout: "fitData",
       columns: [
         { title: "Sunday", field: "sunday" },
         { title: "Countdown", field: "countdown", sorter:"number" },
