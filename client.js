@@ -34,7 +34,7 @@ function displayData(weeklyData) {
             const data = cell.getRow().getData();
             if (data.runDistance > 0) activityBubbles += `<span class="bubble run">Run: ${data.runDistance.toFixed(2)}km, ${formatTime(data.runTime)}</span>`;
             if (data.bikeDistance > 0) activityBubbles += `<span class="bubble bike">Bike: ${data.bikeDistance.toFixed(2)}km, ${formatTime(data.bikeTime)}</span>`;
-            if (data.bikeIndoorPower > 0) activityBubbles += `<span class="bubble bike">Bike Indoor: ${data.bikeIndoorPower.toFixed(0)}W, ${formatTime(data.bikeTime)}</span>`;
+            if (data.bikeIndoorPower > 0) activityBubbles += `<span class="bubble bike">Bike Indoor: ${data.bikeIndoorPower.toFixed(0)}W, ${formatTime(data.bikeIndoorTime)}</span>`;
             if (data.swimDistance > 0) activityBubbles += `<span class="bubble swim">Swim: ${data.swimDistance.toFixed(2)}km, ${formatTime(data.swimTime)}</span>`;
             if (data.runDistancePlan > 0) activityBubbles += `<span class="bubble run-plan">Run: ${data.runDistancePlan.toFixed(2)}km</span>`;
             if (data.bikeDistancePlan > 0) activityBubbles += `<span class="bubble bike-plan">Bike: ${data.bikeDistancePlan.toFixed(2)}km</span>`;
