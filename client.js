@@ -32,10 +32,18 @@ function displayData(weeklyData) {
           formatter: function(cell) { // Custom formatter for activity bubbles
             let activityBubbles = "";
             const data = cell.getRow().getData();
-            if (data.runDistance > 0 && data.runTime > 0) activityBubbles += `<span class="bubble run">Run: ${data.runDistance.toFixed(2)}km, ${formatTime(data.runTime)}</span>`;
-            if (data.bikeDistance > 0 && data.bikeTime > 0) activityBubbles += `<span class="bubble bike">Bike: ${data.bikeDistance.toFixed(2)}km, ${formatTime(data.bikeTime)}</span>`;
-            if (data.bikeIndoorPower > 0 && data.bikeTime > 0) activityBubbles += `<span class="bubble bike">Bike Indoor: ${data.bikeIndoorPower.toFixed(0)}W, ${formatTime(data.bikeTime)}</span>`;
-            if (data.swimDistance > 0 && data.swimTime > 0) activityBubbles += `<span class="bubble swim">Swim: ${data.swimDistance.toFixed(2)}km, ${formatTime(data.swimTime)}</span>`;
+            if (data.runDistance > 0) {
+              activityBubbles += `<span class="bubble ${data.runTime > 0 ? 'run' : 'run-plan'}">Run: ${data.runDistance.toFixed(2)}km, ${formatTime(data.runTime)}</span>`;
+            }
+            if (data.bikeDistance > 0) {
+              activityBubbles += `<span class="bubble ${data.bikeTime > 0 ? 'bike' : 'bike-plan'}">Bike: ${data.bikeDistance.toFixed(2)}km, ${formatTime(data.bikeTime)}</span>`;
+            } 
+            if (data.bikeIndoorPower > 0) {
+              activityBubbles += `<span class="bubble ${data.bikeTime > 0 ? 'bike' : 'bike-plan'}">Bike Indoor: ${data.bikeIndoorPower.toFixed(0)}W, ${formatTime(data.bikeTime)}</span>`;
+            }
+            if (data.swimDistance > 0) {
+              activityBubbles += `<span class="bubble ${data.swimTime > 0 ? 'swim' : 'swim-plan'}">Swim: ${data.swimDistance.toFixed(2)}km, ${formatTime(data.swimTime)}</span>`;
+            }
             return activityBubbles;
           }
         },
