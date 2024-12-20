@@ -55,9 +55,10 @@ function displayData(weeklyData) {
               return "";
             }
 
-            const total = actual + planned; // Total width is now sum of both
-            const actualWidth = total > 0 ? (actual / total) * 100 : 0;
-            const plannedWidth = total > 0 ? (planned / total) * 100 : 0;
+            const maxTotal = 1.2; // maxTotal to be 1.2 Ironman Equivalent
+            const total = actual + planned;
+            const actualWidth = total > 0 ? (actual / maxTotal) * 100 : 0;
+            const plannedWidth = total > 0 ? (planned / maxTotal) * 100 : 0;
                 
             return `
             <div class="bar-container">
