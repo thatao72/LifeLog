@@ -32,18 +32,13 @@ function displayData(weeklyData) {
           formatter: function(cell) { // Custom formatter for activity bubbles
             let activityBubbles = "";
             const data = cell.getRow().getData();
-            if (data.runDistance > 0) {
-              activityBubbles += `<span class="bubble ${data.runTime > 0 ? 'run' : 'run-plan'}">Run: ${data.runDistance.toFixed(2)}km, ${formatTime(data.runTime)}</span>`;
-            }
-            if (data.bikeDistance > 0) {
-              activityBubbles += `<span class="bubble ${data.bikeTime > 0 ? 'bike' : 'bike-plan'}">Bike: ${data.bikeDistance.toFixed(2)}km, ${formatTime(data.bikeTime)}</span>`;
-            } 
-            if (data.bikeIndoorPower > 0) {
-              activityBubbles += `<span class="bubble ${data.bikeTime > 0 ? 'bike' : 'bike-plan'}">Bike Indoor: ${data.bikeIndoorPower.toFixed(0)}W, ${formatTime(data.bikeTime)}</span>`;
-            }
-            if (data.swimDistance > 0) {
-              activityBubbles += `<span class="bubble ${data.swimTime > 0 ? 'swim' : 'swim-plan'}">Swim: ${data.swimDistance.toFixed(2)}km, ${formatTime(data.swimTime)}</span>`;
-            }
+            if (data.runDistance > 0) activityBubbles += `<span class="bubble run">Run: ${data.runDistance.toFixed(2)}km, ${formatTime(data.runTime)}</span>`;
+            if (data.bikeDistance > 0) activityBubbles += `<span class="bubble bike">Bike: ${data.bikeDistance.toFixed(2)}km, ${formatTime(data.bikeTime)}</span>`;
+            if (data.bikeIndoorPower > 0) activityBubbles += `<span class="bubble bike">Bike Indoor: ${data.bikeIndoorPower.toFixed(0)}W, ${formatTime(data.bikeTime)}</span>`;
+            if (data.swimDistance > 0) activityBubbles += `<span class="bubble swim">Swim: ${data.swimDistance.toFixed(2)}km, ${formatTime(data.swimTime)}</span>`;
+            if (data.runDistancePlan > 0) activityBubbles += `<span class="bubble run-plan">Run: ${data.runDistancePlan.toFixed(2)}km</span>`;
+            if (data.bikeDistancePlan > 0) activityBubbles += `<span class="bubble bike-plan">Bike: ${data.bikeDistancePlan.toFixed(2)}km</span>`;
+            if (data.swimDistancePlan > 0) activityBubbles += `<span class="bubble swim-plan">Swim: ${data.swimDistancePlan.toFixed(2)}km</span>`;
             return activityBubbles;
           }
         },
@@ -51,15 +46,27 @@ function displayData(weeklyData) {
           title: "Total Activity",
           field: "totalActivity",
           formatter: function(cell) {
-            const value = cell.getValue();
-            if (typeof value !== 'number' || isNaN(value)) return ""; // Handle invalid values
-            const maxValue = findMaxValue(weeklyData); // Find the maximum value for scaling
-            const width = (value / maxValue) * 100; // Calculate percentage width
-            console.log("totalActivity width: ", width);
-            console.log("totalActivity value: ", value)
-            return `<div class="bar-container"><div class="bar" style="width: ${width}%;"></div><span class="bar-label">${value.toFixed(2)}</span></div>`;
+            const data = cell.getRow().getData();
+            const actual = data.totalActivity || 0;
+            const planned = data.totalActivityPlanned || 0;
+            const total = Math.max(actual, planned); // Use the larger value for scaling
+            if (total === 0) return "";
+        
+            const actualWidth = (actual / total) * 100;
+            const plannedWidth = (planned / total) * 100;
+            
+            return `
+              <div class="bar-container">
+                <div class="bar actual-bar" style="width: ${actualWidth}%;">
+                    <span class="bar-label">${actual.toFixed(2)}</span>
+                </div>
+                <div class="bar planned-bar" style="width: ${plannedWidth}%; margin-left: -${plannedWidth}%;">
+                    <span class="bar-label">${planned.toFixed(2)}</span>
+                </div>
+              </div>
+            `;
           }
-        },        
+        },
         {
           title: "Events",
           field: "events",
