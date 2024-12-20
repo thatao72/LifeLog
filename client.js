@@ -49,12 +49,15 @@ function displayData(weeklyData) {
             const data = cell.getRow().getData();
             const actual = data.totalActivity || 0;
             const planned = data.totalActivityPlan || 0;
-            const total = Math.max(actual, planned); // Use the larger value for scaling
-            if (total === 0) return "";
-        
-            const actualWidth = (actual / total) * 100;
-            const plannedWidth = (planned / total) * 100;
+            
+            if (actual === 0 && planned === 0) {
+              return "";
+            }
 
+            const total = actual + planned; // Total width is now sum of both
+            const actualWidth = total > 0 ? (actual / total) * 100 : 0;
+            const plannedWidth = total > 0 ? (planned / total) * 100 : 0;
+                
             return `
             <div class="bar-container">
               ${actual > 0 ? `<div class="bar actual-bar" style="width: ${actualWidth}%;"><span class="bar-label">${actual.toFixed(2)}</span></div>` : ""}
