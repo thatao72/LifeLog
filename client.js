@@ -63,7 +63,7 @@ function displayData(weeklyData) {
             return `
             <div class="bar-container">
               ${actual > 0 ? `<div class="bar actual-bar" style="width: ${actualWidth}%;"><span class="bar-label">${actual.toFixed(2)}</span></div>` : ""}
-              ${planned > 0 ? `<div class="bar planned-bar" style="width: ${plannedWidth}%;"><span class="bar-label">${planned.toFixed(2)}</span></div>` : ""}
+              ${planned > 0 ? `<div class="bar planned-bar" style="width: ${plannedWidth}%;">` : ""}
             </div>
           `;
           }
