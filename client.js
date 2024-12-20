@@ -45,11 +45,12 @@ function displayData(weeklyData) {
         {
           title: "Total Activity",
           field: "totalActivity",
+          formatter: "html", // Allow HTML
           formatter: function(cell) {
             const data = cell.getRow().getData();
             const actual = data.totalActivity || 0;
             const planned = data.totalActivityPlan || 0;
-            
+
             if (actual === 0 && planned === 0) {
               return "";
             }
