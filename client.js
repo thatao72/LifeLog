@@ -24,7 +24,7 @@ function displayData(weeklyData) {
       data: tableData,
       layout: "fitData",
       columns: [
-        { title: "Week", field: "week" },
+        { title: "Week", field: "week", width: 150 },
         { title: "Countdown", field: "countdown", sorter:"number" },
         {
           title: "Activity",
