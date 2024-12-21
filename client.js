@@ -33,13 +33,13 @@ function displayData(weeklyData) {
             let activityBubbles = "";
             const data = cell.getRow().getData();
             const bikeIndoorPower = data.bikeIndoorTime !== 0 ? data.bikeIndoorPower.toFixed(0)/data.bikeIndoorTime : 10000;
-            if (data.runDistance > 0) activityBubbles += `<span class="bubble run">Run: ${data.runDistance.toFixed(2)}km, ${formatTime(data.runTime)}</span>`;
-            if (data.bikeDistance > 0) activityBubbles += `<span class="bubble bike">Bike: ${data.bikeDistance.toFixed(2)}km, ${formatTime(data.bikeTime)}</span>`;
+            if (data.runDistance > 0) activityBubbles += `<span class="bubble run">Run: ${data.runDistance.toFixed(1)}km, ${formatTime(data.runTime)}</span>`;
+            if (data.bikeDistance > 0) activityBubbles += `<span class="bubble bike">Bike: ${data.bikeDistance.toFixed(0)}km, ${formatTime(data.bikeTime)}</span>`;
             if (data.bikeIndoorPower > 0) activityBubbles += `<span class="bubble bike">Bike Indoor: ${bikeIndoorPower.toFixed(0)}W, ${formatTime(data.bikeIndoorTime)}</span>`;
-            if (data.swimDistance > 0) activityBubbles += `<span class="bubble swim">Swim: ${data.swimDistance.toFixed(2)}km, ${formatTime(data.swimTime)}</span>`;
-            if (data.runDistancePlan > 0) activityBubbles += `<span class="bubble run-plan">Run: ${data.runDistancePlan.toFixed(2)}km</span>`;
-            if (data.bikeDistancePlan > 0) activityBubbles += `<span class="bubble bike-plan">Bike: ${data.bikeDistancePlan.toFixed(2)}km</span>`;
-            if (data.swimDistancePlan > 0) activityBubbles += `<span class="bubble swim-plan">Swim: ${data.swimDistancePlan.toFixed(2)}km</span>`;
+            if (data.swimDistance > 0) activityBubbles += `<span class="bubble swim">Swim: ${data.swimDistance.toFixed(1)}km, ${formatTime(data.swimTime)}</span>`;
+            if (data.runDistancePlan > 0) activityBubbles += `<span class="bubble run-plan">Run: ${data.runDistancePlan.toFixed(1)}km</span>`;
+            if (data.bikeDistancePlan > 0) activityBubbles += `<span class="bubble bike-plan">Bike: ${data.bikeDistancePlan.toFixed(0)}km</span>`;
+            if (data.swimDistancePlan > 0) activityBubbles += `<span class="bubble swim-plan">Swim: ${data.swimDistancePlan.toFixed(1)}km</span>`;
             return activityBubbles;
           }
         },
