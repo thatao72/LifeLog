@@ -97,15 +97,3 @@ function formatTime(time) {
 
   return `${h}:${m}:${s}`;
 }
-
-function findMaxValue(weeklyData) {
-  let maxValue = 0;
-  for (const targetDateStr in weeklyData) {
-      const targetData = weeklyData[targetDateStr];
-      for (const weekStr in targetData.weeks) {
-          const week = targetData.weeks[weekStr];
-          if(week.totalActivity > maxValue) maxValue = week.totalActivity
-      }
-  }
-  return maxValue;
-}
