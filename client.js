@@ -14,8 +14,8 @@ function displayData(weeklyData) {
     tablesDiv.appendChild(tableDiv);
 
     const tableData = [];
-    for (const sundayStr in targetData.weeks) {
-      const week = targetData.weeks[sundayStr];
+    for (const weekStr in targetData.weeks) {
+      const week = targetData.weeks[weekStr];
       tableData.push(week);
     }
 
@@ -24,7 +24,7 @@ function displayData(weeklyData) {
       data: tableData,
       layout: "fitData",
       columns: [
-        { title: "Sunday", field: "sunday" },
+        { title: "Week", field: "week" },
         { title: "Countdown", field: "countdown", sorter:"number" },
         {
           title: "Activity",
@@ -102,8 +102,8 @@ function findMaxValue(weeklyData) {
   let maxValue = 0;
   for (const targetDateStr in weeklyData) {
       const targetData = weeklyData[targetDateStr];
-      for (const sundayStr in targetData.weeks) {
-          const week = targetData.weeks[sundayStr];
+      for (const weekStr in targetData.weeks) {
+          const week = targetData.weeks[weekStr];
           if(week.totalActivity > maxValue) maxValue = week.totalActivity
       }
   }
