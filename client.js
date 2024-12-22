@@ -8,7 +8,6 @@ function displayData(weeklyData) {
     const targetData = weeklyData[targetDateStr];
 
     let shouldShow = false; // By default, hide the table
-    const targetData = weeklyData[targetDateStr];
     for (const weekStr in targetData.weeks) {
       const [mondayStr, sundayStr] = weekStr.split(" - "); // Split weekStr
       const monday = new Date(mondayStr);
