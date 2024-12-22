@@ -13,6 +13,9 @@ function displayData(weeklyData) {
       const monday = new Date(mondayStr);
       const sunday = new Date(sundayStr);
 
+      console.log("today", today);
+      console.log("monday", monday);
+      console.log("sunday", sunday);
       if (today >= monday && today <= sunday) {
         shouldShow = true;
         break;
