@@ -1,15 +1,31 @@
 function displayData(weeklyData) {
   const tablesDiv = document.getElementById("tables"); // Get the tables container
+  const today = new Date(); // Get today's date
+
   for (const targetDateStr in weeklyData) {
     console.log("targetDateStr", targetDateStr);
     const safeTargetDateId = targetDateStr.replace(/\//g, '-');
     const targetData = weeklyData[targetDateStr];
+
+    let shouldShow = false; // By default, hide the table
+    const targetData = weeklyData[targetDateStr];
+    for (const weekStr in targetData.weeks) {
+      const [mondayStr, sundayStr] = weekStr.split(" - "); // Split weekStr
+      const monday = new Date(mondayStr);
+      const sunday = new Date(sundayStr);
+
+      if (today >= monday && today <= sunday) {
+        shouldShow = true;
+        break;
+      }
+    }
 
     // Create the h2 and div elements dynamically
     const h2 = document.createElement("h2");
     h2.textContent = targetData.eventName;
     const tableContainer = document.createElement("div"); // Create a container div
     tableContainer.id = "table-container-" + safeTargetDateId; // Unique ID for the container
+    tableContainer.style.display = shouldShow ? "block" : "none"; // Set display based on shouldShow
     const tableDiv = document.createElement("div");
     tableDiv.id = "table-" + safeTargetDateId;
     tableContainer.appendChild(tableDiv); // Append the table to the container
