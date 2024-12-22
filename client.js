@@ -1,6 +1,7 @@
 function displayData(weeklyData) {
   const tablesDiv = document.getElementById("tables"); // Get the tables container
   const today = new Date(); // Get today's date
+  today.setHours(0, 0, 0, 0); // Set time to midnight
 
   for (const targetDateStr in weeklyData) {
     console.log("targetDateStr", targetDateStr);
