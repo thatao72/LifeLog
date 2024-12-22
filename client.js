@@ -8,10 +8,13 @@ function displayData(weeklyData) {
     // Create the h2 and div elements dynamically
     const h2 = document.createElement("h2");
     h2.textContent = targetData.eventName;
+    const tableContainer = document.createElement("div"); // Create a container div
+    tableContainer.id = "table-container-" + safeTargetDateId; // Unique ID for the container
     const tableDiv = document.createElement("div");
     tableDiv.id = "table-" + safeTargetDateId;
+    tableContainer.appendChild(tableDiv); // Append the table to the container
     tablesDiv.appendChild(h2);
-    tablesDiv.appendChild(tableDiv);
+    tablesDiv.appendChild(tableContainer); // Append the container to the tables div
 
     const tableData = [];
     for (const weekStr in targetData.weeks) {
@@ -84,6 +87,11 @@ function displayData(weeklyData) {
           }
         }        
       ],
+    });
+
+    h2.addEventListener("click", function() {
+      const tableContainer = document.getElementById("table-container-" + safeTargetDateId);
+      tableContainer.style.display = tableContainer.style.display === "none" ? "block" : "none";
     });
   }
 }
