@@ -1,0 +1,4 @@
+lxml
+requests
+garth>=0.4.32
+python-dotenv
