@@ -2,23 +2,42 @@ from garminconnect import Garmin
 import datetime
 import csv
 import json
-import os
+import io
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 
-def read_existing_data(filename):
+# Google Drive API setup
+SCOPES = ['https://www.googleapis.com/auth/drive']
+creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+drive_service = build('drive', 'v3', credentials=creds)
+
+def read_existing_data(file_id):
+    request = drive_service.files().get_media(fileId=file_id, supportsAllDrives=True)
+    fh = io.BytesIO()
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while done is False:
+        status, done = downloader.next_chunk()
+    
+    fh.seek(0)
     data = {}
-    if os.path.exists(filename):
-        with open(filename, 'r') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                data[row['Date']] = row
+    reader = csv.DictReader(io.TextIOWrapper(fh))
+    for row in reader:
+        data[row['Date']] = row
     return data
 
-def write_csv(filename, data, fieldnames):
-    with open(filename, 'w', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for date in sorted(data.keys()):
-            writer.writerow(data[date])
+def write_csv(file_id, data, fieldnames):
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer.writeheader()
+    for date in sorted(data.keys()):
+        writer.writerow(data[date])
+    
+    media = MediaIoBaseUpload(io.BytesIO(output.getvalue().encode()),
+                              mimetype='text/csv',
+                              resumable=True)
+    drive_service.files().update(fileId=file_id, media_body=media).execute()
 
 # Initialize the Garmin Connect client
 client = Garmin("tsuyoshi_hatao@yahoo.co.jp", "18Mar1969")
@@ -28,11 +47,11 @@ client.login()
 start_date = datetime.date(2022, 4, 25)
 end_date = datetime.date.today() + datetime.timedelta(days=-1)
 
-filename = 'garmin_data.csv'
+file_id = '1TOMjmLt8fWDiuF1TUx0k4WPk0AujeNDg'  # Replace with your actual file ID
 fieldnames = ['Date', 'Resting HR', 'Sleep Score', 'Stress', 'Body Battery High', 'Body Battery Low', 'Weight']
 
 # Read existing data
-existing_data = read_existing_data(filename)
+existing_data = read_existing_data(file_id)
 
 # Find the last date in existing data
 if existing_data:
@@ -77,7 +96,7 @@ while current_date <= end_date:
 
     current_date += datetime.timedelta(days=1)
 
-# Write updated data to CSV
-write_csv(filename, existing_data, fieldnames)
+# Write updated data to CSV on Google Drive
+write_csv(file_id, existing_data, fieldnames)
 
-print("Data extraction complete. Results saved in garmin_data.csv")
+print("Data extraction complete. Results saved in Google Drive CSV file.")
