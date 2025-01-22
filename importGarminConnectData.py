@@ -24,7 +24,7 @@ def read_existing_data(file_id):
     data = {}
     reader = csv.DictReader(io.TextIOWrapper(fh))
     for row in reader:
-        data[row['Date']] = row
+        data[row['date']] = row
     return data
 
 def write_csv(file_id, data, fieldnames):
@@ -48,7 +48,7 @@ start_date = datetime.date(2022, 4, 25)
 end_date = datetime.date.today() + datetime.timedelta(days=-1)
 
 file_id = '1TOMjmLt8fWDiuF1TUx0k4WPk0AujeNDg'  # Replace with your actual file ID
-fieldnames = ['Date', 'Resting HR', 'Sleep Score', 'Stress', 'Body Battery High', 'Body Battery Low', 'Weight']
+fieldnames = ['date', 'restingHeartRate', 'sleepScore', 'stress', 'bodyBatteryHigh', 'bodyBatteryLow', 'weight']
 
 # Read existing data
 existing_data = read_existing_data(file_id)
@@ -58,45 +58,46 @@ if existing_data:
     last_date = max(datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in existing_data.keys())
     start_date = last_date + datetime.timedelta(days=1)
 
-print(f"Fetching new data from {start_date} to {end_date}")
+if start_date <= end_date:
+    print(f"Fetching new data from {start_date} to {end_date}")
 
-# Fetch body composition data for the new date range
-body_composition_data = client.get_body_composition(start_date, end_date)
-weight_dict = {item['calendarDate']: item['weight'] for item in body_composition_data.get('dateWeightList', [])}
+    # Fetch body composition data for the new date range
+    body_composition_data = client.get_body_composition(start_date, end_date)
+    weight_dict = {item['calendarDate']: item['weight'] for item in body_composition_data.get('dateWeightList', [])}
 
-# Iterate through each day
-current_date = start_date
-while current_date <= end_date:
-    date_str = current_date.strftime("%Y-%m-%d")
-    print(f"\nFetching data for {date_str}")
+    # Iterate through each day
+    current_date = start_date
+    while current_date <= end_date:
+        date_str = current_date.strftime("%Y-%m-%d")
+        print(f"\nFetching data for {date_str}")
 
-    sleep_data = client.get_sleep_data(date_str)
-    user_summary = client.get_user_summary(date_str)
+        sleep_data = client.get_sleep_data(date_str)
+        user_summary = client.get_user_summary(date_str)
 
-    # Extract relevant information
-    rhr = user_summary.get('restingHeartRate', None) if user_summary else None
-    sleep_score = sleep_data.get("dailySleepDTO", {}).get("sleepScores", {}).get("overall", {}).get("value") if sleep_data else None
-    stress = user_summary.get('averageStressLevel', None) if user_summary else None
-    body_battery_high = user_summary.get('bodyBatteryHighestValue', None) if user_summary else None
-    body_battery_low = user_summary.get('bodyBatteryLowestValue', None) if user_summary else None
-    weight = weight_dict.get(date_str)
-    if weight is not None:
-        weight /= 1000.0
+        # Extract relevant information
+        rhr = user_summary.get('restingHeartRate', None) if user_summary else None
+        sleep_score = sleep_data.get("dailySleepDTO", {}).get("sleepScores", {}).get("overall", {}).get("value") if sleep_data else None
+        stress = user_summary.get('averageStressLevel', None) if user_summary else None
+        body_battery_high = user_summary.get('bodyBatteryHighestValue', None) if user_summary else None
+        body_battery_low = user_summary.get('bodyBatteryLowestValue', None) if user_summary else None
+        weight = weight_dict.get(date_str)
+        if weight is not None:
+            weight /= 1000.0
 
-    # Add new data to existing data
-    existing_data[date_str] = {
-        'Date': date_str,
-        'Resting HR': rhr,
-        'Sleep Score': sleep_score,
-        'Stress': stress,
-        'Body Battery High': body_battery_high,
-        'Body Battery Low': body_battery_low,
-        'Weight': weight
-    }
+        # Add new data to existing data
+        existing_data[date_str] = {
+            'date': date_str,
+            'restingHeartRate': rhr,
+            'sleepScore': sleep_score,
+            'stress': stress,
+            'bodyBatteryHigh': body_battery_high,
+            'bodyBatteryLow': body_battery_low,
+            'weight': weight
+        }
 
-    current_date += datetime.timedelta(days=1)
+        current_date += datetime.timedelta(days=1)
 
-# Write updated data to CSV on Google Drive
-write_csv(file_id, existing_data, fieldnames)
+    # Write updated data to CSV on Google Drive
+    write_csv(file_id, existing_data, fieldnames)
 
-print("Data extraction complete. Results saved in Google Drive CSV file.")
+    print("Data extraction complete. Results saved in Google Drive CSV file.")
