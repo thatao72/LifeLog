@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>Weekly Charts</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    h2 {
+      background-color: #343a40;
+      color: white;
+      padding: 10px 20px;
+      margin: 0;
+      font-size: 1.5em;
+      font-weight: bold;
+      border-bottom: 2px solid #0056b3;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  </style>  
+</head>
+<body>
+  <h1>Weekly Charts</h1>
+  <canvas id="health-metrics-chart-container"></canvas>
+
+  <script>
+    const chartDataString = <?= chartData ?>;
+    const chartData = JSON.parse(chartDataString);
+    console.log("Data from template:", chartData);
+
+    const heartRateColor = '#C62828';
+    const sleepScoreColor = '#1976D2';
+    const stressColor = '#FFA726';
+
+    const renderHealthMetricsChart = () => {
+      const canvas = document.getElementById('health-metrics-chart-container');
+      const ctx = canvas.getContext('2d');
+
+      new Chart(ctx, {
+        data: {
+          labels: chartData.labels,
+          datasets: [
+            {
+              label: 'Average Resting Heart Rate',
+              data: chartData.heartRates,
+              borderColor: heartRateColor,
+              pointBackgroundColor: heartRateColor,
+              fill: false,
+              yAxisID: 'y1',
+              type: 'line'
+            },
+            {
+              label: 'Annual Average Heart Rate',
+              data: chartData.heartRateStepLineData,
+              borderColor: '#994444',
+              borderWidth: 1,
+              stepped: 'middle',
+              pointRadius: 0,
+              yAxisID: 'y1',
+              type: 'line'
+            },            
+            {
+              label: 'Average Sleep Score',
+              data: chartData.sleepScores,
+              borderColor: sleepScoreColor,
+              pointBackgroundColor: sleepScoreColor,
+              fill: false,
+              yAxisID: 'y1',
+              type: 'line'
+            },
+            {
+              label: 'Annual Average Sleep Score',
+              data: chartData.sleepScoreStepLineData,
+              borderColor: '#446699',
+              borderWidth: 1,
+              stepped: 'middle',
+              pointRadius: 0,
+              yAxisID: 'y1',
+              type: 'line'
+            },            
+            {
+              label: 'Average Stress',
+              data: chartData.stresses,
+              borderColor: stressColor,
+              pointBackgroundColor: stressColor,
+              fill: false,
+              yAxisID: 'y1',
+              type: 'line'
+            },
+            {
+              label: 'Annual Average Stress',
+              data: chartData.stressStepLineData,
+              borderColor: '#CC8844',
+              borderWidth: 1,
+              stepped: 'middle',
+              pointRadius: 0,
+              yAxisID: 'y1',
+              type: 'line'
+            },            
+            {
+              label: 'Body Battery Range',
+              data: chartData.labels.map((_, index) => ({
+                x: chartData.labels[index],
+                y: [chartData.bodyBatteryLows[index], chartData.bodyBatteryHighs[index]]
+              })),
+              backgroundColor: '#B0BEC5',
+              borderColor: '#90A4AE',
+              yAxisID: 'y1',
+              type: 'bar'
+            },            
+            {
+              label: 'Total Activities',
+              data: chartData.totalActivities,
+              backgroundColor: '#4CAF5080',
+              borderColor: '#4CAF50',
+              borderWidth: 1,
+              yAxisID: 'y2',
+              type: 'bar'
+            }
+          ]
+        },
+        options: {
+          scales: {
+            x: {
+              reverse: true,
+              stacked: true
+            },
+            y1: { // Define options for the 'y1' axis
+              position: 'left',
+              min: -20,
+              max: 100,
+              ticks: {
+                stepSize: 20,
+                callback: function(value, index, values) {
+                  return value < 0 ? '': value;
+                }
+              },
+              border: { display: true },
+              title: {
+                display: true,
+                text: 'Bottom: Total Activities      Top: Resting Heart Rate/Sleep Score/Stress/Body Battery',
+                align: 'center'
+              }
+            },
+            y2: {
+              position: 'left',
+              min: 0,
+              max: 6,
+              ticks: { display: false },
+              grid: {
+                drawOnChartArea: false,
+                drawTicks: false
+              },
+              border:{ display: false },
+              title: { display: false }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                filter: function(item, chart) {
+                  return !item.text.includes('Annual Average');
+                }
+               }
+            }
+          }          
+        }
+      });
+    };
+
+    const setupAndCreateHealthMetricsChart = () => {
+      console.log("setupAndCreateHealthMetricsChart called!"); // Add this for debugging
+
+      Chart.register({
+        id: 'moveXAxisToZero',
+        afterDatasetsDraw: (chart, args, options) => {
+          const { ctx, chartArea, scales } = chart;
+          const { x, y1 } = scales;
+
+          const zeroY = y1.getPixelForValue(0);
+
+          if(!isNaN(zeroY)){
+            ctx.beginPath();
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.moveTo(chartArea.left, zeroY);
+            ctx.lineTo(chartArea.right, zeroY);
+            ctx.stroke();
+          }
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', renderHealthMetricsChart);
+
+      // if (document.readyState === 'loading') {
+      //   document.addEventListener('DOMContentLoaded', renderHealthMetricsChart);
+      // } else {
+      //   renderHealthMetricsChart();
+      // }
+    };
+
+    setupAndCreateHealthMetricsChart();
+
+    // const checkChartJsLoaded = () => {
+    //   if (typeof Chart !== 'undefined') {
+    //     clearTimeout(timeout);
+    //     console.log("Chart.js loaded!");
+    //     setupAndCreateHealthMetricsChart();
+    //   }
+    // };
+
+    // const timeout = setTimeout(checkChartJsLoaded, 5000);
+    // checkChartJsLoaded();
+  </script>
+</body>
+</html>

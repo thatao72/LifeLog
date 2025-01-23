@@ -1,0 +1,6 @@
+# .claspignore
+**/node_modules/**
+**/.git/**
+**/.vscode/**
+**/venv/**
+client.js

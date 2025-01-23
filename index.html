@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>Weekly Summary</title>
+  <link href="https://unpkg.com/tabulator-tables@5.4.3/dist/css/tabulator.min.css" rel="stylesheet">
+  <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.4.3/dist/js/tabulator.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.22.15/babel.min.js"></script>
+  <style>
+    body { /* Styles for the entire body */
+      font-family: 'Roboto', sans-serif; /* Set the default font */
+      background-color: #f0f0f0; /* Example background color */
+      color: #333; /* Default text color */
+    }
+    h2 {
+      background-color: #343a40; /* Example blue background color (adjust as needed) */
+      color: white;
+      padding: 10px 20px; /* Add padding around the text */
+      margin: 0; /* Remove default margins */
+      font-size: 1.5em; /* Adjust font size as needed */
+      font-weight: bold; /* Make the title bold */
+      border-bottom: 2px solid #0056b3; /* Optional: Add a bottom border */
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+    }
+    .bubble {
+      border-radius: 5px;
+      color: white; /* Keep white text for contrast against dark backgrounds */
+      padding: 5px 10px;
+      margin: 2px;
+      display: inline-block;
+      font-weight: bold; /* Make the text a bit bolder for better readability */
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3); /* Add a subtle text shadow for depth */
+    }
+    .run {
+      background-color: #C62828; /* Darker red (slightly desaturated) */
+    }
+    .bike {
+      background-color: #6A1B9A; /* Darker purple */
+    }
+    .swim {
+      background-color: #1976D2; /* Darker blue */
+    }
+    .run-plan {
+      background-color: #FFCDD2;
+      color: #A0522D; /* Slightly lighter brown-red */
+    }
+    .bike-plan {
+      background-color: #E1BEE7;
+      color: #7B1FA2; /* Slightly lighter purple */
+    }
+    .swim-plan {
+      background-color: #BBDEFB;
+      color: #4285F4; /* Slightly lighter blue */
+    }
+    .event {
+      background-color: #388E3C; /* Darker green */
+    }
+    .bar-container {
+      background-color: #eee;
+      border-radius: 3px;
+      height: 20px;
+      margin-top: 4px;
+      overflow: hidden;
+      display: flex; /* Use flexbox */
+      align-items: center; /* Vertically center content */
+    }
+    .bar {
+      height: 100%;
+      border-radius: 3px;
+      display: flex;
+      align-items: center; /* Vertically center content within each bar */
+      justify-content: center; /* Horizontally center content within each bar */
+        box-sizing: border-box;
+        padding: 0 5px;
+        position: relative;
+    }
+    .actual-bar {
+      background-color: #4CAF50;
+    }
+    .planned-bar {
+      background-color: #81C784;
+      opacity: 0.7;
+    }
+    .bar-label {
+      color: black;
+      font-size: smaller;
+      white-space: nowrap;
+        position: absolute;
+        left: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+  </style>
+</head>
+<body>
+  <h1>Weekly Summary</h1>
+  <div id="table-container" style="width: 1200px; margin: 0 auto;">  
+    <div id="tables"></div>
+  </div>
+  <script>
+    const weeklyDataString =  <?= weeklyData ?>;
+    const weeklyDataFromTemplate = JSON.parse(weeklyDataString);
+    console.log("Data from template:", weeklyDataFromTemplate);
+
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("DOM content loaded");
+      console.log(google.script)
+      displayData(weeklyDataFromTemplate);
+    });
+  </script>
+  <script src="https://unpkg.com/@thatao72/lifelog@1.2.12/client.js"></script>
+</body>
+</html>
