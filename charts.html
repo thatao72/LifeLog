@@ -54,7 +54,7 @@
               type: 'line'
             },
             {
-              label: 'Annual Average Heart Rate',
+              label: 'Annual Average Resting Heart Rate',
               data: chartData.heartRateStepLineData,
               borderColor: '#994444',
               borderWidth: 1,
@@ -100,7 +100,18 @@
               pointRadius: 0,
               yAxisID: 'y1',
               type: 'line'
-            },            
+            },
+            {
+              label: 'Weight',
+              data: chartData.weights,
+              borderColor: '#7B1FA2',
+              borderWidth: 1,
+              pointBackgroundColor: '#7B1FA2',
+              spanGaps: true,
+              fill: false,
+              yAxisID: 'y1',
+              type: 'line'
+            },
             {
               label: 'Body Battery Range',
               data: chartData.labels.map((_, index) => ({
@@ -134,7 +145,7 @@
               min: -20,
               max: 100,
               ticks: {
-                stepSize: 20,
+                stepSize: 25,
                 callback: function(value, index, values) {
                   return value < 0 ? '': value;
                 }

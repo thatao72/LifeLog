@@ -157,7 +157,8 @@ function getWeeklyChartData() {
       sleepScore: parseFloat(healthRow[2]),
       stress: parseFloat(healthRow[3]),
       bodyBatteryHigh: parseFloat(healthRow[4]),
-      bodyBatteryLow: parseFloat(healthRow[5])
+      bodyBatteryLow: parseFloat(healthRow[5]),
+      weight: parseFloat(healthRow[6])
     };
   }
 
@@ -197,11 +198,13 @@ function getWeeklyChartData() {
         stresses: [],
         bodyBatteryHighs: [],
         bodyBatteryLows: [],
+        weights: [],
         averageRestingHeartRate: null,
         averageSleepScore: null,
         averageStress: null,
         averageBodyBatteryHigh: null,
         averageBodyBatteryLow: null,
+        averageWeight: null,
         annualAverageRestingHeartRate: null,
         annualAverageSleepScore: null,
         annualAverageStress: null,
@@ -223,6 +226,7 @@ function getWeeklyChartData() {
       (healthDataForDate.stress) && weeklyHealthData[weekStr].stresses.push(healthDataForDate.stress);
       (healthDataForDate.bodyBatteryHigh) && weeklyHealthData[weekStr].bodyBatteryHighs.push(healthDataForDate.bodyBatteryHigh);
       (healthDataForDate.bodyBatteryLow) && weeklyHealthData[weekStr].bodyBatteryLows.push(healthDataForDate.bodyBatteryLow);
+      (healthDataForDate.weight) && weeklyHealthData[weekStr].weights.push(healthDataForDate.weight);
     }
   });
 
@@ -235,6 +239,7 @@ function getWeeklyChartData() {
     weekData.averageStress = calculateAverage(weekData.stresses);
     weekData.averageBodyBatteryHigh = calculateAverage(weekData.bodyBatteryHighs);
     weekData.averageBodyBatteryLow = calculateAverage(weekData.bodyBatteryLows);
+    weekData.averageWeight = calculateAverage(weekData.weights);
 
     const year = new Date(weekStr.split(' - ')[1]).getFullYear();
     if (!annualAverages[year]) {
@@ -272,6 +277,7 @@ function getWeeklyChartData() {
     stresses: [],
     bodyBatteryHighs: [],
     bodyBatteryLows: [],
+    weights: [],
     totalActivities: [],
     heartRateStepLineData: [],
     sleepScoreStepLineData: [],
@@ -288,6 +294,7 @@ function getWeeklyChartData() {
     chartData.stresses.push(weekData.averageStress);
     chartData.bodyBatteryHighs.push(weekData.averageBodyBatteryHigh);
     chartData.bodyBatteryLows.push(weekData.averageBodyBatteryLow);
+    chartData.weights.push(weekData.averageWeight);
     chartData.totalActivities.push(weekData.totalActivity);
 
     const year = new Date(weekStr.split(' - ')[1]).getFullYear();
