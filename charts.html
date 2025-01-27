@@ -21,11 +21,37 @@
       border-bottom: 2px solid #0056b3;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
+    #chart-container {
+      display: flex;
+      flex-direction: column-reverse; /* Toggles now above chart */
+      align-items: center;
+    }
+
+    #chart-toggles {
+      margin-bottom: 20px; /* Add margin to bottom of toggles */
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }    
   </style>  
 </head>
 <body>
   <h1>Weekly Charts</h1>
-  <canvas id="health-metrics-chart-container"></canvas>
+  <div id="chart-container">
+    <canvas id="health-metrics-chart-container"></canvas>
+    <div id="chart-toggles">
+      <label><input type="checkbox" id="heartRateToggle" checked> Average Resting Heart Rate</label>
+      <label><input type="checkbox" id="sleepScoreToggle" checked> Average Sleep Score</label>
+      <label><input type="checkbox" id="stressToggle" checked> Average Stress</label>
+      <label><input type="checkbox" id="weightToggle" checked> Weight</label>
+      <label><input type="checkbox" id="bodyBatteryToggle" checked> Body Battery Range</label>
+      <label><input type="checkbox" id="totalActivityToggle" checked> Total Activities</label>
+      <label><input type="checkbox" id="heartRateStepLineToggle" checked> Annual Average Resting Heart Rate</label>
+      <label><input type="checkbox" id="sleepScoreStepLineToggle" checked> Annual Average Sleep Score</label>
+      <label><input type="checkbox" id="stressStepLineToggle" checked> Annual Average Stress</label>
+    </div>
+  </div>
 
   <script>
     const chartDataString = <?= chartData ?>;
@@ -40,7 +66,7 @@
       const canvas = document.getElementById('health-metrics-chart-container');
       const ctx = canvas.getContext('2d');
 
-      new Chart(ctx, {
+      const myChart = new Chart(ctx, {
         data: {
           labels: chartData.labels,
           datasets: [
@@ -51,7 +77,8 @@
               pointBackgroundColor: heartRateColor,
               fill: false,
               yAxisID: 'y1',
-              type: 'line'
+              type: 'line',
+              hidden: false
             },
             {
               label: 'Annual Average Resting Heart Rate',
@@ -61,7 +88,8 @@
               stepped: 'middle',
               pointRadius: 0,
               yAxisID: 'y1',
-              type: 'line'
+              type: 'line',
+              hidden: false
             },            
             {
               label: 'Average Sleep Score',
@@ -70,7 +98,8 @@
               pointBackgroundColor: sleepScoreColor,
               fill: false,
               yAxisID: 'y1',
-              type: 'line'
+              type: 'line',
+              hidden: false
             },
             {
               label: 'Annual Average Sleep Score',
@@ -80,7 +109,8 @@
               stepped: 'middle',
               pointRadius: 0,
               yAxisID: 'y1',
-              type: 'line'
+              type: 'line',
+              hidden: false
             },            
             {
               label: 'Average Stress',
@@ -89,7 +119,8 @@
               pointBackgroundColor: stressColor,
               fill: false,
               yAxisID: 'y1',
-              type: 'line'
+              type: 'line',
+              hidden: false
             },
             {
               label: 'Annual Average Stress',
@@ -99,7 +130,8 @@
               stepped: 'middle',
               pointRadius: 0,
               yAxisID: 'y1',
-              type: 'line'
+              type: 'line',
+              hidden: false
             },
             {
               label: 'Weight',
@@ -110,7 +142,8 @@
               spanGaps: true,
               fill: false,
               yAxisID: 'y1',
-              type: 'line'
+              type: 'line',
+              hidden: false
             },
             {
               label: 'Body Battery Range',
@@ -121,7 +154,8 @@
               backgroundColor: '#B0BEC5',
               borderColor: '#90A4AE',
               yAxisID: 'y1',
-              type: 'bar'
+              type: 'bar',
+              hidden: false
             },            
             {
               label: 'Total Activities',
@@ -130,7 +164,8 @@
               borderColor: '#4CAF50',
               borderWidth: 1,
               yAxisID: 'y2',
-              type: 'bar'
+              type: 'bar',
+              hidden: false
             }
           ]
         },
@@ -180,6 +215,35 @@
             }
           }          
         }
+      });
+
+      const heartRateToggle = document.getElementById('heartRateToggle');
+      const sleepScoreToggle = document.getElementById('sleepScoreToggle');
+      const stressToggle = document.getElementById('stressToggle');
+      const weightToggle = document.getElementById('weightToggle');
+      const bodyBatteryToggle = document.getElementById('bodyBatteryToggle');
+      const totalActivityToggle = document.getElementById('totalActivityToggle');
+      const heartRateStepLineToggle = document.getElementById('heartRateStepLineToggle');
+      const sleepScoreStepLineToggle = document.getElementById('sleepScoreStepLineToggle');
+      const stressStepLineToggle = document.getElementById('stressStepLineToggle');
+
+      const toggles = [
+        { toggle: heartRateToggle, datasetIndex: 0 },
+        { toggle: heartRateStepLineToggle, datasetIndex: 1 },
+        { toggle: sleepScoreToggle, datasetIndex: 2 },
+        { toggle: sleepScoreStepLineToggle, datasetIndex: 3 },
+        { toggle: stressToggle, datasetIndex: 4 },
+        { toggle: stressStepLineToggle, datasetIndex: 5 },
+        { toggle: weightToggle, datasetIndex: 6 },
+        { toggle: bodyBatteryToggle, datasetIndex: 7 },
+        { toggle: totalActivityToggle, datasetIndex: 8 },
+      ];
+
+      toggles.forEach(({ toggle, datasetIndex }) => {
+        toggle.addEventListener('change', () => {
+          myChart.data.datasets[datasetIndex].hidden = !toggle.checked;
+          myChart.update();
+        });
       });
     };
 
