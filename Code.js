@@ -167,6 +167,7 @@ function getWeeklyChartData() {
   currentWeekEnding.setHours(0, 0, 0, 0);
 
   const weeklyHealthData = {};
+  const weeksEndingOnTargetDate = [];
 
   data.forEach(row => {
     const date = row[0];
@@ -190,6 +191,11 @@ function getWeeklyChartData() {
 
     const monday = new Date(date.getTime() + (dayOfDate === 0 ? -6 : 1 - dayOfDate) * 24 * 60 * 60 * 1000);
     const weekStr = `${monday.toLocaleDateString()} - ${sunday.toLocaleDateString()}`;
+    const targetDateStr = targetDate.toLocaleDateString();
+
+    if (date.getDay() === 0 && sunday.toLocaleDateString() === targetDateStr) { // Check if it's Sunday AND week ends on targetDate
+      weeksEndingOnTargetDate.push(weekStr);
+    }
 
     if (!weeklyHealthData[weekStr]) {
       weeklyHealthData[weekStr] = {
@@ -282,6 +288,7 @@ function getWeeklyChartData() {
     heartRateStepLineData: [],
     sleepScoreStepLineData: [],
     stressStepLineData: [],
+    weeksEndingOnTargetDate: weeksEndingOnTargetDate
   };
 
   // Transform weeklyHealthData into time series data

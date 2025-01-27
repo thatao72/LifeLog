@@ -213,7 +213,8 @@
                 }
                }
             }
-          }          
+          },
+          weeksEndingOnTargetDate: chartData.weeksEndingOnTargetDate          
         }
       });
 
@@ -265,6 +266,45 @@
             ctx.moveTo(chartArea.left, zeroY);
             ctx.lineTo(chartArea.right, zeroY);
             ctx.stroke();
+          }
+        }
+      });
+
+      Chart.register({
+        id: 'target-date-lines',
+        afterDatasetsDraw: (chart) => {
+          const { ctx, chartArea, scales } = chart;
+          const { x } = scales;
+          const chartData = chart.config.data; // Access chart data correctly
+          const targetWeeks = chart.config.options.weeksEndingOnTargetDate;
+
+          if (targetWeeks && targetWeeks.length > 0 && chartData.labels) { // add chartData.labels check
+            targetWeeks.forEach(weekStr => {
+              const targetWeekIndex = chartData.labels.indexOf(weekStr);
+              console.log("Target week index:", targetWeekIndex); // Add this for debugging
+
+              if (targetWeekIndex !== -1) {
+                let xPosition;
+                const currentWeekX = x.getPixelForValue(chartData.labels[targetWeekIndex]);
+
+                if (targetWeekIndex > 0) { // Not the first week: between current and previous
+                  const previousWeekX = x.getPixelForValue(chartData.labels[targetWeekIndex - 1]);
+                  xPosition = (currentWeekX + previousWeekX) / 2;
+                } else if (chartData.labels.length > 1) { // Is first week but more than 1 week
+                  const nextWeekX = x.getPixelForValue(chartData.labels[targetWeekIndex + 1]);
+                  xPosition = currentWeekX - (nextWeekX - currentWeekX) / 2;
+                } else { // Is the only week
+                    xPosition = currentWeekX;
+                }
+
+                ctx.beginPath();
+                ctx.strokeStyle = '#388E3C';
+                ctx.lineWidth = 2;
+                ctx.moveTo(xPosition, chartArea.top);
+                ctx.lineTo(xPosition, chartArea.bottom);
+                ctx.stroke();
+              }
+            });
           }
         }
       });
