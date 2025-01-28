@@ -10,7 +10,6 @@
       background-color: #f0f0f0;
       color: #333;
     }
-
     h2 {
       background-color: #343a40;
       color: white;
@@ -26,14 +25,21 @@
       flex-direction: column-reverse; /* Toggles now above chart */
       align-items: center;
     }
-
     #chart-toggles {
-      margin-bottom: 20px; /* Add margin to bottom of toggles */
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-    }    
+      justify-content: center; /* Center the toggles horizontally */
+      gap: 20px; /* Add some spacing between columns */
+      margin-bottom: 20px;
+    }
+    .toggle-column {
+      display: flex;
+      flex-direction: column; /* Arrange items vertically within each column */
+      gap: 5px; /* Add spacing between toggle labels within a column */
+      align-items: flex-start; /* Align items to the left within column */
+    }
+    #target-lines-toggle {
+      margin-top: 10px;
+    }
   </style>  
 </head>
 <body>
@@ -41,15 +47,30 @@
   <div id="chart-container">
     <canvas id="health-metrics-chart-container"></canvas>
     <div id="chart-toggles">
-      <label><input type="checkbox" id="heartRateToggle" checked> Average Resting Heart Rate</label>
-      <label><input type="checkbox" id="sleepScoreToggle" checked> Average Sleep Score</label>
-      <label><input type="checkbox" id="stressToggle" checked> Average Stress</label>
-      <label><input type="checkbox" id="weightToggle" checked> Weight</label>
-      <label><input type="checkbox" id="bodyBatteryToggle" checked> Body Battery Range</label>
-      <label><input type="checkbox" id="totalActivityToggle" checked> Total Activities</label>
-      <label><input type="checkbox" id="heartRateStepLineToggle" checked> Annual Average Resting Heart Rate</label>
-      <label><input type="checkbox" id="sleepScoreStepLineToggle" checked> Annual Average Sleep Score</label>
-      <label><input type="checkbox" id="stressStepLineToggle" checked> Annual Average Stress</label>
+      <div class="toggle-column">
+        <label><input type="checkbox" id="heartRateToggle" checked> Avg. Heart Rate</label>
+        <label><input type="checkbox" id="heartRateTargetEventPeriodLineToggle" checked> Target Event Avg. Heart Rate</label>
+        <label><input type="checkbox" id="heartRateStepLineToggle"> Annual Avg. Heart Rate</label>
+      </div>
+      <div class="toggle-column">
+        <label><input type="checkbox" id="sleepScoreToggle" checked> Avg. Sleep Score</label>
+        <label><input type="checkbox" id="sleepScoreTargetEventPeriodLineToggle" checked> Target Event Avg. Sleep Score</label>
+        <label><input type="checkbox" id="sleepScoreStepLineToggle"> Annual Avg. Sleep Score</label>
+      </div>
+      <div class="toggle-column">
+        <label><input type="checkbox" id="stressToggle" checked> Avg. Stress</label>
+        <label><input type="checkbox" id="stressTargetEventPeriodLineToggle" checked> Target Event Avg. Stress</label>
+        <label><input type="checkbox" id="stressStepLineToggle"> Annual Avg. Stress</label>
+      </div>
+      <div class="toggle-column">
+        <label><input type="checkbox" id="weightToggle" checked> Weight</label>
+        <label><input type="checkbox" id="bodyBatteryToggle" checked> Body Battery Range</label>
+      </div>
+      <div class="toggle-column">
+        <label><input type="checkbox" id="totalActivityToggle" checked> Total Activities</label>
+        <label><input type="checkbox" id="totalActivitiesEventStepLineToggle" checked> Target Event Avg. Total Activities</label>
+      </div>
+      <div id="target-lines-toggle"> <label><input type="checkbox" id="targetLinesToggle" checked> Show Target Lines</label></div>
     </div>
   </div>
 
@@ -81,8 +102,8 @@
               hidden: false
             },
             {
-              label: 'Annual Average Resting Heart Rate',
-              data: chartData.heartRateStepLineData,
+              label: 'Event Average Resting Heart Rate',
+              data: chartData.heartRateTargetEventPeriodLineData,
               borderColor: '#994444',
               borderWidth: 1,
               stepped: 'middle',
@@ -91,6 +112,17 @@
               type: 'line',
               hidden: false
             },            
+            {
+              label: 'Annual Average Resting Heart Rate',
+              data: chartData.heartRateStepLineData,
+              borderColor: '#994444',
+              borderWidth: 1,
+              stepped: 'middle',
+              pointRadius: 0,
+              yAxisID: 'y1',
+              type: 'line',
+              hidden: true
+            },
             {
               label: 'Average Sleep Score',
               data: chartData.sleepScores,
@@ -102,8 +134,8 @@
               hidden: false
             },
             {
-              label: 'Annual Average Sleep Score',
-              data: chartData.sleepScoreStepLineData,
+              label: 'Event Average Sleep Score',
+              data: chartData.sleepScoreTargetEventPeriodLineData,
               borderColor: '#446699',
               borderWidth: 1,
               stepped: 'middle',
@@ -113,11 +145,33 @@
               hidden: false
             },            
             {
+              label: 'Annual Average Sleep Score',
+              data: chartData.sleepScoreStepLineData,
+              borderColor: '#446699',
+              borderWidth: 1,
+              stepped: 'middle',
+              pointRadius: 0,
+              yAxisID: 'y1',
+              type: 'line',
+              hidden: true
+            },            
+            {
               label: 'Average Stress',
               data: chartData.stresses,
               borderColor: stressColor,
               pointBackgroundColor: stressColor,
               fill: false,
+              yAxisID: 'y1',
+              type: 'line',
+              hidden: false
+            },
+            {
+              label: 'Event Average Stress',
+              data: chartData.stressTargetEventPeriodLineData,
+              borderColor: '#CC8844',
+              borderWidth: 1,
+              stepped: 'middle',
+              pointRadius: 0,
               yAxisID: 'y1',
               type: 'line',
               hidden: false
@@ -131,7 +185,7 @@
               pointRadius: 0,
               yAxisID: 'y1',
               type: 'line',
-              hidden: false
+              hidden: true
             },
             {
               label: 'Weight',
@@ -165,6 +219,17 @@
               borderWidth: 1,
               yAxisID: 'y2',
               type: 'bar',
+              hidden: false
+            },
+            {
+              label: 'Event Average Total Activities',
+              data: chartData.totalActivitiesTargetEventPeriodLineData,
+              borderColor: '#4CAF50',
+              borderWidth: 1,
+              stepped: 'middle',
+              pointRadius: 0,
+              yAxisID: 'y2',
+              type: 'line',
               hidden: false
             }
           ]
@@ -209,12 +274,13 @@
             legend: {
               labels: {
                 filter: function(item, chart) {
-                  return !item.text.includes('Annual Average');
+                  return !item.text.includes('Annual Average') && !item.text.includes('Event Average');
                 }
                }
             }
           },
-          weeksEndingOnTargetDate: chartData.weeksEndingOnTargetDate          
+          weeksEndingOnTargetDate: chartData.weeksEndingOnTargetDate,
+          showTargetLines: true
         }
       });
 
@@ -227,25 +293,29 @@
       const heartRateStepLineToggle = document.getElementById('heartRateStepLineToggle');
       const sleepScoreStepLineToggle = document.getElementById('sleepScoreStepLineToggle');
       const stressStepLineToggle = document.getElementById('stressStepLineToggle');
+      const heartRateEventStepLineToggle = document.getElementById('heartRateEventStepLineToggle');
+      const sleepScoreEventStepLineToggle = document.getElementById('sleepScoreEventStepLineToggle');
+      const stressStepEventLineToggle = document.getElementById('stressEventStepLineToggle');
+      const totalActivitiesEventStepLineToggle = document.getElementById('totalActivitiesEventStepLineToggle');
 
-      const toggles = [
-        { toggle: heartRateToggle, datasetIndex: 0 },
-        { toggle: heartRateStepLineToggle, datasetIndex: 1 },
-        { toggle: sleepScoreToggle, datasetIndex: 2 },
-        { toggle: sleepScoreStepLineToggle, datasetIndex: 3 },
-        { toggle: stressToggle, datasetIndex: 4 },
-        { toggle: stressStepLineToggle, datasetIndex: 5 },
-        { toggle: weightToggle, datasetIndex: 6 },
-        { toggle: bodyBatteryToggle, datasetIndex: 7 },
-        { toggle: totalActivityToggle, datasetIndex: 8 },
-      ];
+      const toggles = document.querySelectorAll('#chart-toggles input[type="checkbox"]'); // Select all checkboxes in #chart-toggles
 
-      toggles.forEach(({ toggle, datasetIndex }) => {
-        toggle.addEventListener('change', () => {
-          myChart.data.datasets[datasetIndex].hidden = !toggle.checked;
-          myChart.update();
-        });
+      toggles.forEach((toggle, index) => {
+          toggle.addEventListener('change', () => {
+              if (myChart.data.datasets[index]) { // Check if dataset exists at index
+                  myChart.data.datasets[index].hidden = !toggle.checked;
+                  myChart.update();
+              } else {
+                  console.warn("Dataset not found for toggle at index:", index);
+              }
+          });
       });
+
+      const targetLinesToggle = document.getElementById('targetLinesToggle');
+      targetLinesToggle.addEventListener('change', () => {
+          myChart.options.showTargetLines = targetLinesToggle.checked;
+          myChart.update();
+      });     
     };
 
     const setupAndCreateHealthMetricsChart = () => {
@@ -277,8 +347,9 @@
           const { x } = scales;
           const chartData = chart.config.data; // Access chart data correctly
           const targetWeeks = chart.config.options.weeksEndingOnTargetDate;
+          const showTargetLines = chart.config.options.showTargetLines;
 
-          if (targetWeeks && targetWeeks.length > 0 && chartData.labels) { // add chartData.labels check
+          if (showTargetLines === true && targetWeeks && targetWeeks.length > 0 && chartData.labels) { // Explicitly check for === true
             targetWeeks.forEach(weekStr => {
               const targetWeekIndex = chartData.labels.indexOf(weekStr);
               console.log("Target week index:", targetWeekIndex); // Add this for debugging
