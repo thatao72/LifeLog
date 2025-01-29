@@ -7,7 +7,7 @@ function doGet(e) {
     return template.evaluate()
         .setTitle('Weekly Charts')
         .setSandboxMode(HtmlService.SandboxMode.IFRAME);
-  } else { // Default to summary page
+  } else {
     let template = HtmlService.createTemplateFromFile('index');
     template.weeklyData = getWeeklyData();
 
@@ -18,18 +18,14 @@ function doGet(e) {
 }
 
 function getWeeklyData() {
-  // Get the spreadsheet and sheet.
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('Data');
-
-  // Get all data (adjust range as needed).
   const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 13).getValues(); // Assuming header row
 
   const weeklyData = {};
 
   data.forEach(row => {
     const date = row[0];
-    const dateStr = date.toLocaleDateString(); // Key for lookup
     const targetDate = row[1];
     const countdown = row[2];
     const events = row[3] ? row[3].split(',').map(s => s.trim()) : [];
@@ -125,7 +121,6 @@ function getWeeklyData() {
         weeklyData[targetDateStr].weeks[weekStr].events.push(event);
       }
     });
-
   });
 
   const jsonString = JSON.stringify(weeklyData);
@@ -133,11 +128,8 @@ function getWeeklyData() {
 }
 
 function getWeeklyChartData() {
-  // Get the spreadsheet and sheet.
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('Data');
-
-  // Get all data (adjust range as needed).
   const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 13).getValues(); // Assuming header row
 
   const fileId = PropertiesService.getScriptProperties().getProperty('HEALTH_CSV_FILE_ID');
@@ -146,7 +138,6 @@ function getWeeklyChartData() {
   const csvContent = blob.getDataAsString();
   const csvData = Utilities.parseCsv(csvContent);
 
-  // Create a date-keyed lookup for health data
   const healthDataByDate = {};
   for (let i = 1; i < csvData.length; i++) {
     const healthRow = csvData[i];
@@ -166,8 +157,9 @@ function getWeeklyChartData() {
   const currentWeekEnding = getSunday(today);
   currentWeekEnding.setHours(0, 0, 0, 0);
 
-  const weeklyHealthData = {};
   const weeksEndingOnTargetDate = [];
+  const weeksEndingOnYearEnd = [];
+  const weeklyHealthData = {};
 
   data.forEach(row => {
     const date = row[0];
@@ -187,14 +179,21 @@ function getWeeklyChartData() {
     const sunday = new Date(date.getTime() + (dayOfDate === 0 ? 0 : 7 - dayOfDate) * 24 * 60 * 60 * 1000);
     sunday.setHours(0, 0, 0, 0);
 
-    if (sunday > currentWeekEnding) return; // Filter out future weeks
+    if (sunday > currentWeekEnding) return;
 
     const monday = new Date(date.getTime() + (dayOfDate === 0 ? -6 : 1 - dayOfDate) * 24 * 60 * 60 * 1000);
     const weekStr = `${monday.toLocaleDateString()} - ${sunday.toLocaleDateString()}`;
     const targetDateStr = targetDate.toLocaleDateString();
 
-    if (date.getDay() === 0 && sunday.toLocaleDateString() === targetDateStr) { // Check if it's Sunday AND week ends on targetDate
+    if (date.getDay() === 0 && sunday.toLocaleDateString() === targetDateStr) {
       weeksEndingOnTargetDate.push(weekStr);
+    }
+
+    const lastSundayOfYear = new Date(sunday.getFullYear(), 11, 31);
+    lastSundayOfYear.setDate(31 - (lastSundayOfYear.getDay()));
+
+    if (date.getDay() === 0 && sunday.toLocaleDateString() === lastSundayOfYear.toLocaleDateString()) {
+      weeksEndingOnYearEnd.push(weekStr);
     }
 
     if (!weeklyHealthData[weekStr]) {
@@ -216,7 +215,6 @@ function getWeeklyChartData() {
       };
     }
 
-    // Calculate total activity
     (runTime && runDistance) && (weeklyHealthData[weekStr].totalActivity += runDistance / 40 / 3);
     (bikeTime && bikeDistance) && (weeklyHealthData[weekStr].totalActivity += bikeDistance / 180 / 3);
     (bikeTime && bikeIndoorPower) && (weeklyHealthData[weekStr].totalActivity += bikeIndoorPower * timeToSeconds(bikeTime) / 3600 * 40 / 120 / 180 / 3);
@@ -236,6 +234,7 @@ function getWeeklyChartData() {
 
   const annualAverages = {};
   const targetEventPeriodAverages = {};
+
   for (const weekStr in weeklyHealthData) {
     const weekData = weeklyHealthData[weekStr];
 
@@ -246,20 +245,20 @@ function getWeeklyChartData() {
     weekData.averageBodyBatteryLow = calculateAverage(weekData.bodyBatteryLows);
     weekData.averageWeight = calculateAverage(weekData.weights);
 
-    // Store annual averages for later use
     const year = new Date(weekStr.split(' - ')[1]).getFullYear();
     if (!annualAverages[year]) {
       annualAverages[year] = {
         restingHeartRates: [],
         sleepScores: [],
-        stresses: []
+        stresses: [],
+        totalActivities: []
       };
     }
     if(weekData.averageRestingHeartRate) annualAverages[year].restingHeartRates.push(weekData.averageRestingHeartRate);
     if(weekData.averageSleepScore) annualAverages[year].sleepScores.push(weekData.averageSleepScore);
     if(weekData.averageStress) annualAverages[year].stresses.push(weekData.averageStress);
+    if(weekData.totalActivity) annualAverages[year].totalActivities.push(weekData.totalActivity);
 
-    // Store target event period averages
     if (!targetEventPeriodAverages[weekData.targetDateStr]) {
       targetEventPeriodAverages[weekData.targetDateStr] = {
         restingHeartRates: [],
@@ -269,19 +268,18 @@ function getWeeklyChartData() {
       };
     }
 
-    //Push data to the correct targetDate
     if(weekData.averageRestingHeartRate) targetEventPeriodAverages[weekData.targetDateStr].restingHeartRates.push(weekData.averageRestingHeartRate);
     if(weekData.averageSleepScore) targetEventPeriodAverages[weekData.targetDateStr].sleepScores.push(weekData.averageSleepScore);
     if(weekData.averageStress) targetEventPeriodAverages[weekData.targetDateStr].stresses.push(weekData.averageStress);
     if(weekData.totalActivity) targetEventPeriodAverages[weekData.targetDateStr].totalActivities.push(weekData.totalActivity);
   }
 
-  // Calculate annual averages
   for (const year in annualAverages) {
     annualAverages[year] = {
       restingHeartRate: calculateAverage(annualAverages[year].restingHeartRates),
       sleepScore: calculateAverage(annualAverages[year].sleepScores),
-      stress: calculateAverage(annualAverages[year].stresses)
+      stress: calculateAverage(annualAverages[year].stresses),
+      totalActivity: calculateAverage(annualAverages[year].totalActivities)
     };
   }
 
@@ -306,14 +304,15 @@ function getWeeklyChartData() {
     heartRateStepLineData: [],
     sleepScoreStepLineData: [],
     stressStepLineData: [],
+    totalActivitiesStepLineData: [],
     heartRateTargetEventPeriodLineData: [],
     sleepScoreTargetEventPeriodLineData: [],
     stressTargetEventPeriodLineData: [],
     totalActivitiesTargetEventPeriodLineData: [],
-    weeksEndingOnTargetDate: weeksEndingOnTargetDate
+    weeksEndingOnTargetDate: weeksEndingOnTargetDate,
+    weeksEndingOnYearEnd: weeksEndingOnYearEnd
   };
 
-  // Transform weeklyHealthData into time series data
   for (const weekStr in weeklyHealthData) {
     const weekData = weeklyHealthData[weekStr];
 
@@ -330,6 +329,7 @@ function getWeeklyChartData() {
     chartData.heartRateStepLineData.push(annualAverages[year].restingHeartRate);
     chartData.sleepScoreStepLineData.push(annualAverages[year].sleepScore);
     chartData.stressStepLineData.push(annualAverages[year].stress);
+    chartData.totalActivitiesStepLineData.push(annualAverages[year].totalActivity);
 
     chartData.heartRateTargetEventPeriodLineData.push(targetEventPeriodAverages[weekData.targetDateStr].restingHeartRate);
     chartData.sleepScoreTargetEventPeriodLineData.push(targetEventPeriodAverages[weekData.targetDateStr].sleepScore);
@@ -365,7 +365,7 @@ function parseDate (dateString) {
 
 function timeToSeconds(time) {
   if (!time) return 0;
-  if (typeof time === 'number') return time * 86400; //Fraction of day to seconds
+  if (typeof time === 'number') return time * 86400;
   if (time instanceof Date) {
     return time.getHours() * 3600 + time.getMinutes() * 60 + time.getSeconds();
   }
@@ -373,7 +373,7 @@ function timeToSeconds(time) {
 }
 
 function calculateAverage(arr) {
-  if (arr.length === 0) return null; // Return null if no data
+  if (arr.length === 0) return null;
   const validNumbers = arr.filter(Number.isFinite);
   if (validNumbers.length === 0) return null;
   const sum = validNumbers.reduce((a, b) => a + b, 0);

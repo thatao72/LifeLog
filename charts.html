@@ -22,23 +22,20 @@
     }
     #chart-container {
       display: flex;
-      flex-direction: column-reverse; /* Toggles now above chart */
+      flex-direction: column-reverse;
       align-items: center;
     }
     #chart-toggles {
       display: flex;
-      justify-content: center; /* Center the toggles horizontally */
-      gap: 20px; /* Add some spacing between columns */
+      justify-content: center;
+      gap: 20px;
       margin-bottom: 20px;
     }
     .toggle-column {
       display: flex;
-      flex-direction: column; /* Arrange items vertically within each column */
-      gap: 5px; /* Add spacing between toggle labels within a column */
-      align-items: flex-start; /* Align items to the left within column */
-    }
-    #target-lines-toggle {
-      margin-top: 10px;
+      flex-direction: column;
+      gap: 5px;
+      align-items: flex-start;
     }
   </style>  
 </head>
@@ -48,29 +45,20 @@
     <canvas id="health-metrics-chart-container"></canvas>
     <div id="chart-toggles">
       <div class="toggle-column">
-        <label><input type="checkbox" id="heartRateToggle" checked> Avg. Heart Rate</label>
-        <label><input type="checkbox" id="heartRateTargetEventPeriodLineToggle" checked> Target Event Avg. Heart Rate</label>
-        <label><input type="checkbox" id="heartRateStepLineToggle"> Annual Avg. Heart Rate</label>
+        <label data-dataset-label="Resting Heart Rate"><input type="checkbox" id="heartRateToggle" checked> Resting Heart Rate</label>
+        <label data-dataset-label="Sleep Score"><input type="checkbox" id="sleepScoreToggle" checked> Sleep Score</label>
+        <label data-dataset-label="Stress"><input type="checkbox" id="stressToggle" checked> Stress</label>
+        <label data-dataset-label="Total Activities"><input type="checkbox" id="totalActivitiesToggle" checked> Total Activities</label>
       </div>
       <div class="toggle-column">
-        <label><input type="checkbox" id="sleepScoreToggle" checked> Avg. Sleep Score</label>
-        <label><input type="checkbox" id="sleepScoreTargetEventPeriodLineToggle" checked> Target Event Avg. Sleep Score</label>
-        <label><input type="checkbox" id="sleepScoreStepLineToggle"> Annual Avg. Sleep Score</label>
+        <label><input type="checkbox" id="showAveragesToggle"> Show Averages</label>
+        <label><input type="radio" name="averageType" id="targetEventAverageRadio" value="targetEvent" checked> Target Event Period</label>
+        <label><input type="radio" name="averageType" id="annualAverageRadio" value="annual"> Annual</label>
       </div>
       <div class="toggle-column">
-        <label><input type="checkbox" id="stressToggle" checked> Avg. Stress</label>
-        <label><input type="checkbox" id="stressTargetEventPeriodLineToggle" checked> Target Event Avg. Stress</label>
-        <label><input type="checkbox" id="stressStepLineToggle"> Annual Avg. Stress</label>
+        <label data-dataset-label="Weight"><input type="checkbox" id="weightToggle" checked> Weight</label>
+        <label data-dataset-label="Body Battery Range"><input type="checkbox" id="bodyBatteryToggle" checked> Body Battery Range</label>
       </div>
-      <div class="toggle-column">
-        <label><input type="checkbox" id="weightToggle" checked> Weight</label>
-        <label><input type="checkbox" id="bodyBatteryToggle" checked> Body Battery Range</label>
-      </div>
-      <div class="toggle-column">
-        <label><input type="checkbox" id="totalActivityToggle" checked> Total Activities</label>
-        <label><input type="checkbox" id="totalActivitiesEventStepLineToggle" checked> Target Event Avg. Total Activities</label>
-      </div>
-      <div id="target-lines-toggle"> <label><input type="checkbox" id="targetLinesToggle" checked> Show Target Lines</label></div>
     </div>
   </div>
 
@@ -92,7 +80,7 @@
           labels: chartData.labels,
           datasets: [
             {
-              label: 'Average Resting Heart Rate',
+              label: 'Resting Heart Rate',
               data: chartData.heartRates,
               borderColor: heartRateColor,
               pointBackgroundColor: heartRateColor,
@@ -110,7 +98,7 @@
               pointRadius: 0,
               yAxisID: 'y1',
               type: 'line',
-              hidden: false
+              hidden: true
             },            
             {
               label: 'Annual Average Resting Heart Rate',
@@ -124,7 +112,7 @@
               hidden: true
             },
             {
-              label: 'Average Sleep Score',
+              label: 'Sleep Score',
               data: chartData.sleepScores,
               borderColor: sleepScoreColor,
               pointBackgroundColor: sleepScoreColor,
@@ -142,7 +130,7 @@
               pointRadius: 0,
               yAxisID: 'y1',
               type: 'line',
-              hidden: false
+              hidden: true
             },            
             {
               label: 'Annual Average Sleep Score',
@@ -156,7 +144,7 @@
               hidden: true
             },            
             {
-              label: 'Average Stress',
+              label: 'Stress',
               data: chartData.stresses,
               borderColor: stressColor,
               pointBackgroundColor: stressColor,
@@ -174,7 +162,7 @@
               pointRadius: 0,
               yAxisID: 'y1',
               type: 'line',
-              hidden: false
+              hidden: true
             },
             {
               label: 'Annual Average Stress',
@@ -222,6 +210,17 @@
               hidden: false
             },
             {
+              label: 'Annual Average Total Activities',
+              data: chartData.totalActivitiesStepLineData,
+              borderColor: '#4CAF50',
+              borderWidth: 1,
+              stepped: 'middle',
+              pointRadius: 0,
+              yAxisID: 'y2',
+              type: 'line',
+              hidden: true
+            },
+            {
               label: 'Event Average Total Activities',
               data: chartData.totalActivitiesTargetEventPeriodLineData,
               borderColor: '#4CAF50',
@@ -230,7 +229,7 @@
               pointRadius: 0,
               yAxisID: 'y2',
               type: 'line',
-              hidden: false
+              hidden: true
             }
           ]
         },
@@ -240,7 +239,7 @@
               reverse: true,
               stacked: true
             },
-            y1: { // Define options for the 'y1' axis
+            y1: {
               position: 'left',
               min: -20,
               max: 100,
@@ -276,50 +275,75 @@
                 filter: function(item, chart) {
                   return !item.text.includes('Annual Average') && !item.text.includes('Event Average');
                 }
-               }
+              }
             }
           },
           weeksEndingOnTargetDate: chartData.weeksEndingOnTargetDate,
-          showTargetLines: true
+          weeksEndingOnYearEnd: chartData.weeksEndingOnYearEnd,
+          showTargetLines: false,
+          showYearEndLines: false,
+          showTargetEventLines: false
         }
       });
 
-      const heartRateToggle = document.getElementById('heartRateToggle');
-      const sleepScoreToggle = document.getElementById('sleepScoreToggle');
-      const stressToggle = document.getElementById('stressToggle');
-      const weightToggle = document.getElementById('weightToggle');
-      const bodyBatteryToggle = document.getElementById('bodyBatteryToggle');
-      const totalActivityToggle = document.getElementById('totalActivityToggle');
-      const heartRateStepLineToggle = document.getElementById('heartRateStepLineToggle');
-      const sleepScoreStepLineToggle = document.getElementById('sleepScoreStepLineToggle');
-      const stressStepLineToggle = document.getElementById('stressStepLineToggle');
-      const heartRateEventStepLineToggle = document.getElementById('heartRateEventStepLineToggle');
-      const sleepScoreEventStepLineToggle = document.getElementById('sleepScoreEventStepLineToggle');
-      const stressStepEventLineToggle = document.getElementById('stressEventStepLineToggle');
-      const totalActivitiesEventStepLineToggle = document.getElementById('totalActivitiesEventStepLineToggle');
+      const basicLineToggles = document.querySelectorAll('#chart-toggles label[data-dataset-label]');
 
-      const toggles = document.querySelectorAll('#chart-toggles input[type="checkbox"]'); // Select all checkboxes in #chart-toggles
+      basicLineToggles.forEach(label => {
+        const toggle = label.querySelector('input[type="checkbox"]');
+        toggle.addEventListener('change', () => {
+          const datasetLabel = label.dataset.datasetLabel;
 
-      toggles.forEach((toggle, index) => {
-          toggle.addEventListener('change', () => {
-              if (myChart.data.datasets[index]) { // Check if dataset exists at index
-                  myChart.data.datasets[index].hidden = !toggle.checked;
-                  myChart.update();
-              } else {
-                  console.warn("Dataset not found for toggle at index:", index);
-              }
-          });
+          const datasetsToToggle = myChart.data.datasets.filter(dataset => 
+            dataset.label === datasetLabel
+          );
+
+          if (datasetsToToggle.length > 0) {
+            datasetsToToggle.forEach(dataset => {
+              dataset.hidden = !toggle.checked;
+            });
+            updateAverageDatasets();
+            myChart.update();
+          } else {
+            console.warn("Dataset not found for toggle:", datasetLabel);
+          }
+        });
       });
 
-      const targetLinesToggle = document.getElementById('targetLinesToggle');
-      targetLinesToggle.addEventListener('change', () => {
-          myChart.options.showTargetLines = targetLinesToggle.checked;
-          myChart.update();
-      });     
+      const showAveragesToggle = document.getElementById('showAveragesToggle');
+      const annualAverageRadio = document.getElementById('annualAverageRadio');
+      const targetEventAverageRadio = document.getElementById('targetEventAverageRadio');
+
+      showAveragesToggle.addEventListener('change', updateAverageDatasets);
+      annualAverageRadio.addEventListener('change', updateAverageDatasets);
+      targetEventAverageRadio.addEventListener('change', updateAverageDatasets);
+
+      function updateAverageDatasets() {
+        const showAverages = showAveragesToggle.checked;
+        const isAnnual = annualAverageRadio.checked;
+
+        myChart.data.datasets.forEach(dataset => {
+          if (dataset.label.includes('Average')) {
+            const basicDatasetLabel = dataset.label.replace(/^(Annual |Event )?Average /, '');
+            const basicDataset = myChart.data.datasets.find(d => d.label === basicDatasetLabel);
+            const isBasicDatasetVisible = basicDataset && !basicDataset.hidden;
+
+            if (dataset.label.includes('Annual')) {
+              dataset.hidden = !showAverages || !isAnnual || !isBasicDatasetVisible;
+            } else if (dataset.label.includes('Event')) {
+              dataset.hidden = !showAverages || isAnnual || !isBasicDatasetVisible;
+            }
+          }
+        });
+
+        myChart.options.showYearEndLines = showAverages && isAnnual;
+        myChart.options.showTargetEventLines = showAverages && !isAnnual;
+
+        myChart.update();
+      }
     };
 
     const setupAndCreateHealthMetricsChart = () => {
-      console.log("setupAndCreateHealthMetricsChart called!"); // Add this for debugging
+      console.log("setupAndCreateHealthMetricsChart called!");
 
       Chart.register({
         id: 'moveXAxisToZero',
@@ -345,37 +369,44 @@
         afterDatasetsDraw: (chart) => {
           const { ctx, chartArea, scales } = chart;
           const { x } = scales;
-          const chartData = chart.config.data; // Access chart data correctly
-          const targetWeeks = chart.config.options.weeksEndingOnTargetDate;
-          const showTargetLines = chart.config.options.showTargetLines;
+          const chartData = chart.config.data;
+          const showYearEndLines = chart.config.options.showYearEndLines;
+          const showTargetEventLines = chart.config.options.showTargetEventLines;
+          const weeks = showYearEndLines ? chart.config.options.weeksEndingOnYearEnd : 
+                        (showTargetEventLines ? chart.config.options.weeksEndingOnTargetDate : null);
 
-          if (showTargetLines === true && targetWeeks && targetWeeks.length > 0 && chartData.labels) { // Explicitly check for === true
-            targetWeeks.forEach(weekStr => {
-              const targetWeekIndex = chartData.labels.indexOf(weekStr);
-              console.log("Target week index:", targetWeekIndex); // Add this for debugging
+          const drawVerticalLines = (weeksArray) => {
+            if (weeksArray && weeksArray.length > 0 && chartData.labels) {
+              weeksArray.forEach(weekStr => {
+                const weekIndex = chartData.labels.indexOf(weekStr);
 
-              if (targetWeekIndex !== -1) {
-                let xPosition;
-                const currentWeekX = x.getPixelForValue(chartData.labels[targetWeekIndex]);
+                if (weekIndex !== -1) {
+                  let xPosition;
+                  const currentWeekX = x.getPixelForValue(chartData.labels[weekIndex]);
 
-                if (targetWeekIndex > 0) { // Not the first week: between current and previous
-                  const previousWeekX = x.getPixelForValue(chartData.labels[targetWeekIndex - 1]);
-                  xPosition = (currentWeekX + previousWeekX) / 2;
-                } else if (chartData.labels.length > 1) { // Is first week but more than 1 week
-                  const nextWeekX = x.getPixelForValue(chartData.labels[targetWeekIndex + 1]);
-                  xPosition = currentWeekX - (nextWeekX - currentWeekX) / 2;
-                } else { // Is the only week
+                  if (weekIndex > 0) {
+                    const previousWeekX = x.getPixelForValue(chartData.labels[weekIndex - 1]);
+                    xPosition = (currentWeekX + previousWeekX) / 2;
+                  } else if (chartData.labels.length > 1) {
+                    const nextWeekX = x.getPixelForValue(chartData.labels[weekIndex + 1]);
+                    xPosition = currentWeekX - (nextWeekX - currentWeekX) / 2;
+                  } else {
                     xPosition = currentWeekX;
-                }
+                  }
 
-                ctx.beginPath();
-                ctx.strokeStyle = '#388E3C';
-                ctx.lineWidth = 2;
-                ctx.moveTo(xPosition, chartArea.top);
-                ctx.lineTo(xPosition, chartArea.bottom);
-                ctx.stroke();
-              }
-            });
+                  ctx.beginPath();
+                  ctx.strokeStyle = '#388E3C';
+                  ctx.lineWidth = 2;
+                  ctx.moveTo(xPosition, chartArea.top);
+                  ctx.lineTo(xPosition, chartArea.bottom);
+                  ctx.stroke();
+                }
+              });
+            }
+          };
+
+          if (showYearEndLines || showTargetEventLines) {
+              drawVerticalLines(weeks);
           }
         }
       });
