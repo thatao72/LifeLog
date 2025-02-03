@@ -1,13 +1,12 @@
 from garminconnect import Garmin
 import datetime
 import csv
-import json
 import io
+import os
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 from dotenv import load_dotenv
-import os
 
 load_dotenv()
 
@@ -54,7 +53,7 @@ client.login()
 start_date = datetime.date(2022, 4, 25)
 end_date = datetime.date.today() + datetime.timedelta(days=-1)
 
-file_id = '1TOMjmLt8fWDiuF1TUx0k4WPk0AujeNDg'  # Replace with your actual file ID
+file_id = os.environ.get("GOOGLE_DRIVE_FILE_ID")  # Get file ID from env variable
 fieldnames = ['date', 'restingHeartRate', 'sleepScore', 'stress', 'bodyBatteryHigh', 'bodyBatteryLow', 'weight']
 
 # Read existing data

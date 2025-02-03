@@ -1,0 +1,27 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$_SERVICE_NAME', '.'] # Build the Docker image
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/$_SERVICE_NAME'] # Push to Container Registry
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: gcloud
+  args: ['run', 'deploy', '$_SERVICE_NAME', '--image', 'gcr.io/$PROJECT_ID/$_SERVICE_NAME', '--region', '$_REGION', '--platform', 'managed', '--allow-unauthenticated']  # Deploy to Cloud Run
+
+substitutions: # Define variables
+  _SERVICE_NAME: your-cloud-run-service-name  # Replace
+  _REGION: your-cloud-run-region # Replace
+
+# Optional: Set environment variables during deployment
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: gcloud
+  args: ['run', 'services', 'update', '$_SERVICE_NAME', '--region', '$_REGION', '--update-env-vars', 'GARMIN_USERNAME=${GARMIN_USERNAME},GARMIN_PASSWORD=${GARMIN_PASSWORD},GOOGLE_DRIVE_FILE_ID=${GOOGLE_DRIVE_FILE_ID}']
+secretEnv: ['GARMIN_USERNAME', 'GARMIN_PASSWORD', 'GOOGLE_DRIVE_FILE_ID'] # Define secrets
+availableSecrets:
+  GARMIN_USERNAME:
+    versionName: projects/$PROJECT_NUMBER/secrets/GARMIN_USERNAME/versions/latest
+  GARMIN_PASSWORD:
+    versionName: projects/$PROJECT_NUMBER/secrets/GARMIN_PASSWORD/versions/latest
+  GOOGLE_DRIVE_FILE_ID:
+    versionName: projects/$PROJECT_NUMBER/secrets/GOOGLE_DRIVE_FILE_ID/versions/latest
