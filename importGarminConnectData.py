@@ -6,6 +6,13 @@ import io
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+username = os.getenv("GARMIN_USERNAME")
+password = os.getenv("GARMIN_PASSWORD")
 
 # Google Drive API setup
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -40,7 +47,7 @@ def write_csv(file_id, data, fieldnames):
     drive_service.files().update(fileId=file_id, media_body=media).execute()
 
 # Initialize the Garmin Connect client
-client = Garmin("tsuyoshi_hatao@yahoo.co.jp", "18Mar1969")
+client = Garmin(username, password)
 client.login()
 
 # Set the date range

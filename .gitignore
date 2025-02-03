@@ -1,4 +1,5 @@
 venv/
+.env
 *.csv
 token.json
 client_secret_.json
