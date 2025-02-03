@@ -10,8 +10,8 @@ steps:
   args: ['run', 'deploy', '$_SERVICE_NAME', '--image', 'gcr.io/$PROJECT_ID/$_SERVICE_NAME', '--region', '$_REGION', '--platform', 'managed', '--allow-unauthenticated']  # Deploy to Cloud Run
 
 substitutions: # Define variables
-  _SERVICE_NAME: your-cloud-run-service-name  # Replace
-  _REGION: your-cloud-run-region # Replace
+  _SERVICE_NAME: import-garmin-connect
+  _REGION: asia-northeast1
 
 # Optional: Set environment variables during deployment
 - name: 'gcr.io/cloud-builders/gcloud'
