@@ -1,5 +1,6 @@
 # .gcloudignore
-.*
+.claspignore
+.gitignore
 *.html
 *.js
 *.json
