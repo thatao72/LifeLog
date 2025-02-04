@@ -1,0 +1,6 @@
+# .gcloudignore
+.*
+*.html
+*.js
+*.json
+importGarminConnectData.py
