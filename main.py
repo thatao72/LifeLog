@@ -4,7 +4,8 @@ import csv
 import io
 import os
 
-from google.oauth2 import service_account
+# from google.oauth2 import service_account
+from google.auth import default
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 
@@ -37,12 +38,12 @@ def write_csv(drive_service, file_id, data, fieldnames): # Pass drive_service as
 
 def main():
     # 1. Service Account setup (for Cloud Functions)
-    SCOPES = ['https://www.googleapis.com/auth/drive.file']  # Correct scope
-    creds = service_account.Credentials.from_service_account_info(
-        info={},  # Empty dict for Cloud Functions auto-detection
-        scopes=SCOPES
-    )
-
+    # SCOPES = ['https://www.googleapis.com/auth/drive.file']
+    # creds = service_account.Credentials.from_service_account_info(
+    #     info={},  # Empty dict for Cloud Functions auto-detection
+    #     scopes=SCOPES
+    # )
+    creds, _ = default(scopes=['https://www.googleapis.com/auth/drive.file'])
     drive_service = build('drive', 'v3', credentials=creds)
 
     # 2. Get environment variables
