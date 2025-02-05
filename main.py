@@ -10,7 +10,7 @@ from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 
 def test_cred():
     """Tests the default credentials and reports information."""
-    creds, project = default()
+    creds, project = default(scopes=['https://www.googleapis.com/auth/drive.file'])
 
     if creds.valid:
         print("Credentials are valid.")
