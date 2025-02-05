@@ -7,56 +7,148 @@ import os
 from google.auth import default
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
+from google.oauth2 import service_account
 
-def test_cred():
-    """Tests the default credentials and reports information."""
-    creds, project = default(scopes=['https://www.googleapis.com/auth/drive.file'])
+# import requests
+# from google.auth.transport.requests import Request
 
-    if creds.valid:
-        print("Credentials are valid.")
+# def compare_tokens():
+#     """
+#     Compares the access token retrieved by google.auth.default() with the token from the metadata server.
+#     Returns a dictionary with the tokens and whether they match.
+#     """
+#     try:
+#         # Retrieve default credentials
+#         credentials = default(scopes=['https://www.googleapis.com/auth/drive.file'])
+#         # Force re-scoping with required Drive API scope
+#         if credentials.requires_scopes:
+#             credentials = credentials.with_scopes(['https://www.googleapis.com/auth/drive.file'])
+#         credentials.refresh(Request())
+#         default_token = credentials.token
 
-        if creds.service_account_email:
-            print(f"Service account email: {creds.service_account_email}")
-        else:
-            print("Not a service account.")
+#         # Retrieve token from metadata server
+#         metadata_url = "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
+#         headers = {"Metadata-Flavor": "Google"}
+#         response = requests.get(metadata_url, headers=headers)
+#         response.raise_for_status()  # Raise an error if the request fails
+#         metadata_token = response.json()["access_token"]
 
-        if creds.expired:
-            print("Credentials are expired. Refresh if needed.")
+#         # Compare tokens
+#         tokens_match = default_token == metadata_token
 
-        if hasattr(creds, 'scopes'):
-            print(f"Scopes: {creds.scopes}")
+#         return {
+#             "default_token": default_token,
+#             "metadata_token": metadata_token,
+#             "tokens_match": tokens_match
+#         }
 
-        try:
-            drive_service = build('drive', 'v3', credentials=creds)
-            files = drive_service.files().list().execute()  # Attempt a Drive operation
-            print("Successfully listed files (indirect permission check).")
-            # You could also print a file name for further verification:
-            if files.get('files'):
-                print(f"Example file name: {files.get('files')[0].get('name')}")
-            else:
-                print("No files found in Drive (check sharing settings).")
+#     except Exception as e:
+#         return {"error": str(e)}
 
-        except Exception as e:
-            print(f"Error accessing Google Drive (permission issue?): {e}")
 
-    else:
-        print("Credentials are not valid.")
+# def test_drive_access(access_token, file_id):
+#     # Define the Google Drive API URL for the specific file
+#     url = f"https://www.googleapis.com/drive/v3/files/{file_id}?fields=name,id,permissions"
 
-def test_drive_access():
-    creds, _ = default(scopes=['https://www.googleapis.com/auth/drive.file'])
-    drive_service = build('drive', 'v3', credentials=creds)
+#     # Set up the Authorization header with the access token
+#     headers = {
+#         "Authorization": f"Bearer {access_token}"
+#     }
 
-    file_id = os.environ.get("GOOGLE_DRIVE_FILE_ID")
+#     # Make the GET request to Google Drive API
+#     response = requests.get(url, headers=headers)
 
-    if not file_id:
-        raise ValueError("Missing GOOGLE_DRIVE_FILE_ID environment variable")
+#     # Print the response
+#     if response.status_code == 200:
+#         print("File Metadata:", response.json())
+#     else:
+#         print(f"Error: {response.status_code}")
+#         print("Response:", response.json())
 
-    try:
-        # Try to get file metadata (a simple test)
-        file = drive_service.files().get(fileId=file_id, supportsAllDrives=True).execute()
-        print(f"File found: {file.get('name')}") # Print the file name to verify
-    except Exception as e:
-        print(f"Error accessing file: {e}")
+# def inspect_token(token):
+#     url = "https://oauth2.googleapis.com/tokeninfo"
+#     params = {"access_token": token}
+#     response = requests.get(url, params=params)
+#     print(response.json())
+
+# def get_service_account_email():
+#     metadata_url = "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
+#     headers = {"Metadata-Flavor": "Google"}
+#     response = requests.get(metadata_url, headers=headers)
+#     if response.status_code == 200:
+#         return response.text
+#     else:
+#         raise Exception(f"Failed to fetch service account email: {response.status_code}, {response.text}")
+
+# from google.auth.transport.requests import Request
+# def test_adc():
+#     credentials, project = default(scopes=['https://www.googleapis.com/auth/drive.file'])
+#     print(f"Credentials Type: {type(credentials)}")
+#     print(f"Project: {project}")
+#     if credentials.requires_scopes:
+#         print("Scopes are required but not set.")
+#     else:
+#         print(f"Scopes: {credentials.scopes}")
+
+#     # Refresh credentials
+#     credentials.refresh(Request())
+
+#     # Test Google Drive API access
+#     drive_service = build('drive', 'v3', credentials=credentials)
+#     results = drive_service.files().list(pageSize=10).execute()
+#     print(results)
+
+
+# def test_cred():
+#     """Tests the default credentials and reports information."""
+#     # creds, project = default(scopes=['https://www.googleapis.com/auth/drive.file'])
+#     creds = service_account.Credentials.from_service_account_file('/app/secret/cloud-run-service-account-key')  # Path matches the mount path
+
+#     # if creds.valid:
+#     print("Credentials are valid.")
+
+#     if creds.service_account_email:
+#         print(f"Service account email: {creds.service_account_email}")
+#     else:
+#         print("Not a service account.")
+
+#     if creds.expired:
+#         print("Credentials are expired. Refresh if needed.")
+
+#     if hasattr(creds, 'scopes'):
+#         print(f"Scopes: {creds.scopes}")
+
+#     try:
+#         drive_service = build('drive', 'v3', credentials=creds)
+#         files = drive_service.files().list().execute()  # Attempt a Drive operation
+#         print("Successfully listed files (indirect permission check).")
+#         # You could also print a file name for further verification:
+#         if files.get('files'):
+#             print(f"Example file name: {files.get('files')[0].get('name')}")
+#         else:
+#             print("No files found in Drive (check sharing settings).")
+
+#     except Exception as e:
+#         print(f"Error accessing Google Drive (permission issue?): {e}")
+
+#     # else:
+#     #     print("Credentials are not valid.")
+
+# def test_drive_access():
+#     creds, _ = default(scopes=['https://www.googleapis.com/auth/drive.file'])
+#     drive_service = build('drive', 'v3', credentials=creds)
+
+#     file_id = os.environ.get("GOOGLE_DRIVE_FILE_ID")
+
+#     if not file_id:
+#         raise ValueError("Missing GOOGLE_DRIVE_FILE_ID environment variable")
+
+#     try:
+#         # Try to get file metadata (a simple test)
+#         file = drive_service.files().get(fileId=file_id, supportsAllDrives=True).execute()
+#         print(f"File found: {file.get('name')}") # Print the file name to verify
+#     except Exception as e:
+#         print(f"Error accessing file: {e}")
 
 def read_existing_data(drive_service, file_id):
     request = drive_service.files().get_media(fileId=file_id, supportsAllDrives=True)
@@ -87,7 +179,8 @@ def write_csv(drive_service, file_id, data, fieldnames):
 
 def main():
     # 1. Service Account setup (for Cloud Functions)
-    creds, _ = default(scopes=['https://www.googleapis.com/auth/drive.file'])
+    # creds, _ = default(scopes=['https://www.googleapis.com/auth/drive.file'])
+    creds = service_account.Credentials.from_service_account_file('/app/secret/cloud-run-service-account-key')
     drive_service = build('drive', 'v3', credentials=creds)
 
     # 2. Get environment variables
@@ -154,4 +247,4 @@ def main():
         print("Data extraction complete. Results saved in Google Drive CSV file.")
 
 if __name__ == "__main__":
-    test_cred()
+    main()
