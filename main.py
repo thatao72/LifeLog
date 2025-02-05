@@ -8,6 +8,40 @@ from google.auth import default
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 
+def test_cred():
+    """Tests the default credentials and reports information."""
+    creds, project = default()
+
+    if creds.valid:
+        print("Credentials are valid.")
+
+        if creds.service_account_email:
+            print(f"Service account email: {creds.service_account_email}")
+        else:
+            print("Not a service account.")
+
+        if creds.expired:
+            print("Credentials are expired. Refresh if needed.")
+
+        if hasattr(creds, 'scopes'):
+            print(f"Scopes: {creds.scopes}")
+
+        try:
+            drive_service = build('drive', 'v3', credentials=creds)
+            files = drive_service.files().list().execute()  # Attempt a Drive operation
+            print("Successfully listed files (indirect permission check).")
+            # You could also print a file name for further verification:
+            if files.get('files'):
+                print(f"Example file name: {files.get('files')[0].get('name')}")
+            else:
+                print("No files found in Drive (check sharing settings).")
+
+        except Exception as e:
+            print(f"Error accessing Google Drive (permission issue?): {e}")
+
+    else:
+        print("Credentials are not valid.")
+
 def test_drive_access():
     creds, _ = default(scopes=['https://www.googleapis.com/auth/drive.file'])
     drive_service = build('drive', 'v3', credentials=creds)
@@ -120,4 +154,4 @@ def main():
         print("Data extraction complete. Results saved in Google Drive CSV file.")
 
 if __name__ == "__main__":
-    test_drive_access()
+    test_cred()
