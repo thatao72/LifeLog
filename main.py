@@ -4,12 +4,27 @@ import csv
 import io
 import os
 
-# from google.oauth2 import service_account
 from google.auth import default
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 
-def read_existing_data(drive_service, file_id):  # Pass drive_service as argument
+def test_drive_access():
+    creds, _ = default(scopes=['https://www.googleapis.com/auth/drive.file'])
+    drive_service = build('drive', 'v3', credentials=creds)
+
+    file_id = os.environ.get("GOOGLE_DRIVE_FILE_ID")
+
+    if not file_id:
+        raise ValueError("Missing GOOGLE_DRIVE_FILE_ID environment variable")
+
+    try:
+        # Try to get file metadata (a simple test)
+        file = drive_service.files().get(fileId=file_id, supportsAllDrives=True).execute()
+        print(f"File found: {file.get('name')}") # Print the file name to verify
+    except Exception as e:
+        print(f"Error accessing file: {e}")
+
+def read_existing_data(drive_service, file_id):
     request = drive_service.files().get_media(fileId=file_id, supportsAllDrives=True)
     fh = io.BytesIO()
     downloader = MediaIoBaseDownload(fh, request)
@@ -24,7 +39,7 @@ def read_existing_data(drive_service, file_id):  # Pass drive_service as argumen
         data[row['date']] = row
     return data
 
-def write_csv(drive_service, file_id, data, fieldnames): # Pass drive_service as argument
+def write_csv(drive_service, file_id, data, fieldnames):
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=fieldnames)
     writer.writeheader()
@@ -38,18 +53,13 @@ def write_csv(drive_service, file_id, data, fieldnames): # Pass drive_service as
 
 def main():
     # 1. Service Account setup (for Cloud Functions)
-    # SCOPES = ['https://www.googleapis.com/auth/drive.file']
-    # creds = service_account.Credentials.from_service_account_info(
-    #     info={},  # Empty dict for Cloud Functions auto-detection
-    #     scopes=SCOPES
-    # )
     creds, _ = default(scopes=['https://www.googleapis.com/auth/drive.file'])
     drive_service = build('drive', 'v3', credentials=creds)
 
     # 2. Get environment variables
     garmin_username = os.environ.get("GARMIN_USERNAME")
     garmin_password = os.environ.get("GARMIN_PASSWORD")
-    file_id = os.environ.get("GOOGLE_DRIVE_FILE_ID")  # Get file ID from env variable
+    file_id = os.environ.get("GOOGLE_DRIVE_FILE_ID")
 
     if not garmin_username or not garmin_password or not file_id:
       raise ValueError("Missing environment variables: GARMIN_USERNAME, GARMIN_PASSWORD, GOOGLE_DRIVE_FILE_ID")
@@ -64,7 +74,7 @@ def main():
 
     fieldnames = ['date', 'restingHeartRate', 'sleepScore', 'stress', 'bodyBatteryHigh', 'bodyBatteryLow', 'weight']
 
-    existing_data = read_existing_data(drive_service, file_id) # Pass drive_service
+    existing_data = read_existing_data(drive_service, file_id)
 
     if existing_data:
         last_date = max(datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in existing_data.keys())
@@ -105,9 +115,9 @@ def main():
 
             current_date += datetime.timedelta(days=1)
 
-        write_csv(drive_service, file_id, existing_data, fieldnames)  # Pass drive_service
+        write_csv(drive_service, file_id, existing_data, fieldnames)
 
         print("Data extraction complete. Results saved in Google Drive CSV file.")
 
 if __name__ == "__main__":
-    main()
+    test_drive_access()

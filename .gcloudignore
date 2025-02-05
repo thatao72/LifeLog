@@ -1,0 +1,8 @@
+.git/
+.*ignore
+*.html
+*.js
+*.json
+*.yaml
+importGarminConnectData.py
+#!include:.gitignore
