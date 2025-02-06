@@ -4,4 +4,3 @@ venv/
 token.json
 client_secret_.json
 .DS_Store
-auth.py
