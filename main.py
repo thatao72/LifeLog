@@ -4,12 +4,81 @@ import pytz
 import csv
 import io
 import os
+import requests
 
-from google.auth import default
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
-from google.oauth2 import service_account
+from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload, HttpRequest
 
+SCOPES = ['https://www.googleapis.com/auth/drive.file']
+
+def build_drive_service_locally():
+    try:
+        # Import dotenv and google.oauth2.credentials dynamically (only for local use)
+        from dotenv import load_dotenv
+        from google.oauth2.credentials import Credentials
+        
+        # Load environment variables from .env file
+        load_dotenv()
+
+        # Get credentials from token.json
+        creds = None
+        if os.path.exists('token.json'):
+            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+        
+        if not creds or not creds.valid:
+            raise Exception("Invalid or missing credentials. Please authenticate locally using token.json.")
+
+        # Build and return the Drive API service
+        return build('drive', 'v3', credentials=creds)
+    except ImportError as e:
+        raise ImportError("Missing required libraries for local execution. Install `dotenv` and `google-auth-oauthlib`.")
+
+def get_metadata_server_token():
+    metadata_url = "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
+    headers = {"Metadata-Flavor": "Google"}
+    response = requests.get(metadata_url, headers=headers)
+    response.raise_for_status()
+    return response.json()["access_token"]
+
+def build_drive_service_cloud():
+    # Get the access token from metadata server
+    access_token = get_metadata_server_token()
+
+    # Create a custom request object with the token
+    def custom_request_builder(*args, **kwargs):
+        kwargs['headers'] = kwargs.get('headers', {})
+        kwargs['headers']['Authorization'] = f"Bearer {access_token}"
+        return HttpRequest(*args, **kwargs)
+
+    # Build the Drive API service
+    return build('drive', 'v3', requestBuilder=custom_request_builder)
+
+def is_running_in_cloud():
+    """
+    Determines if the script is running in a Google Cloud environment by checking for the metadata server.
+    """
+    try:
+        # Attempt to access the metadata server
+        response = requests.get(
+            "http://metadata.google.internal/computeMetadata/v1/",
+            headers={"Metadata-Flavor": "Google"},
+            timeout=1  # Short timeout to avoid delays locally
+        )
+        return response.status_code == 200
+    except requests.exceptions.RequestException:
+        return False
+
+def build_drive_service():
+    """
+    Dynamically builds the appropriate Drive API service based on the environment (local or cloud).
+    """
+    if is_running_in_cloud():
+        print("Running in Google Cloud environment.")
+        return build_drive_service_cloud()
+    else:
+        print("Running in local environment.")
+        return build_drive_service_locally()
+        
 def read_existing_data(drive_service, file_id):
     request = drive_service.files().get_media(fileId=file_id, supportsAllDrives=True)
     fh = io.BytesIO()
@@ -39,9 +108,7 @@ def write_csv(drive_service, file_id, data, fieldnames):
 
 def main():
     # 1. Service Account setup (for Cloud Functions)
-    # creds, _ = default(scopes=['https://www.googleapis.com/auth/drive.file'])
-    creds = service_account.Credentials.from_service_account_file('/app/secret/cloud-run-service-account-key')
-    drive_service = build('drive', 'v3', credentials=creds)
+    drive_service = build_drive_service()
 
     # 2. Get environment variables
     garmin_username = os.environ.get("GARMIN_USERNAME")
