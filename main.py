@@ -6,9 +6,11 @@ import io
 import os
 import requests
 
+# Required libraries for Google Drive API
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload, HttpRequest
 
+# Required scopes for Google Drive API
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 def build_drive_service_locally():
@@ -20,11 +22,12 @@ def build_drive_service_locally():
         # Load environment variables from .env file
         load_dotenv()
 
-        # Get credentials from token.json
+        # Check if token.json exists and load credentials   
         creds = None
         if os.path.exists('token.json'):
             creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        
+
+        # Raise exception if credentials are missing or invalid        
         if not creds or not creds.valid:
             raise Exception("Invalid or missing credentials. Please authenticate locally using token.json.")
 
@@ -54,9 +57,6 @@ def build_drive_service_cloud():
     return build('drive', 'v3', requestBuilder=custom_request_builder)
 
 def is_running_in_cloud():
-    """
-    Determines if the script is running in a Google Cloud environment by checking for the metadata server.
-    """
     try:
         # Attempt to access the metadata server
         response = requests.get(
@@ -69,17 +69,14 @@ def is_running_in_cloud():
         return False
 
 def build_drive_service():
-    """
-    Dynamically builds the appropriate Drive API service based on the environment (local or cloud).
-    """
     if is_running_in_cloud():
         print("Running in Google Cloud environment.")
         return build_drive_service_cloud()
     else:
         print("Running in local environment.")
         return build_drive_service_locally()
-        
-def read_existing_data(drive_service, file_id):
+
+def read_existing_data(drive_service, file_id):    
     request = drive_service.files().get_media(fileId=file_id, supportsAllDrives=True)
     fh = io.BytesIO()
     downloader = MediaIoBaseDownload(fh, request)
@@ -107,30 +104,29 @@ def write_csv(drive_service, file_id, data, fieldnames):
     drive_service.files().update(fileId=file_id, media_body=media).execute()
 
 def main():
-    # 1. Service Account setup (for Cloud Functions)
+    # Build the Drive API service
     drive_service = build_drive_service()
 
-    # 2. Get environment variables
+    # Get Garmin credentials and Google Drive file ID from environment variables        
     garmin_username = os.environ.get("GARMIN_USERNAME")
     garmin_password = os.environ.get("GARMIN_PASSWORD")
     file_id = os.environ.get("GOOGLE_DRIVE_FILE_ID")
 
+    # Check if required environment variables are set
     if not garmin_username or not garmin_password or not file_id:
       raise ValueError("Missing environment variables: GARMIN_USERNAME, GARMIN_PASSWORD, GOOGLE_DRIVE_FILE_ID")
 
-    # 3. Garmin Connect setup
+    # Authenticate with Garmin Connect
     client = Garmin(garmin_username, garmin_password)
     client.login()
 
-    # 4. Date range and data processing (same as before)
+    # Set the start and end dates for data extraction
     start_date = datetime.date(2022, 4, 25)  # Or get from env variable if needed
     end_date = datetime.datetime.now(pytz.timezone('Asia/Tokyo')).date() + datetime.timedelta(days=-1)
     print(f"Today is {end_date}")
 
-    fieldnames = ['date', 'restingHeartRate', 'sleepScore', 'stress', 'bodyBatteryHigh', 'bodyBatteryLow', 'weight']
-
+    # Read existing data from Google Drive
     existing_data = read_existing_data(drive_service, file_id)
-
     if existing_data:
         last_date = max(datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in existing_data.keys())
         start_date = last_date + datetime.timedelta(days=1)
@@ -138,17 +134,21 @@ def main():
     if start_date <= end_date:
         print(f"Fetching new data from {start_date} to {end_date}")
 
+        # Fetch body composition data for the new date range
         body_composition_data = client.get_body_composition(start_date, end_date)
         weight_dict = {item['calendarDate']: item['weight'] for item in body_composition_data.get('dateWeightList', [])}
 
+        # Fetch sleep and user summary data for the new date range
         current_date = start_date
         while current_date <= end_date:
             date_str = current_date.strftime("%Y-%m-%d")
             print(f"\nFetching data for {date_str}")
 
+            # Fetch sleep data and user summary data for the current date
             sleep_data = client.get_sleep_data(date_str)
             user_summary = client.get_user_summary(date_str)
 
+            # Extract the required fields from the fetched data
             rhr = user_summary.get('restingHeartRate', None) if user_summary else None
             sleep_score = sleep_data.get("dailySleepDTO", {}).get("sleepScores", {}).get("overall", {}).get("value") if sleep_data else None
             stress = user_summary.get('averageStressLevel', None) if user_summary else None
@@ -158,6 +158,7 @@ def main():
             if weight is not None:
                 weight /= 1000.0
 
+            # Update the existing data with the new data
             existing_data[date_str] = {
                 'date': date_str,
                 'restingHeartRate': rhr,
@@ -168,8 +169,11 @@ def main():
                 'weight': weight
             }
 
+            # Move to the next date
             current_date += datetime.timedelta(days=1)
 
+        # Write the updated data back to Google Drive
+        fieldnames = ['date', 'restingHeartRate', 'sleepScore', 'stress', 'bodyBatteryHigh', 'bodyBatteryLow', 'weight']
         write_csv(drive_service, file_id, existing_data, fieldnames)
 
         print("Data extraction complete. Results saved in Google Drive CSV file.")
