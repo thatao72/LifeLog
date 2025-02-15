@@ -211,8 +211,8 @@ function getWeeklyChartData() {
         averageBodyBatteryHigh: null,
         averageBodyBatteryLow: null,
         averageWeight: null,
-        totalActivity: null,
-        totalLoad: null,
+        totalActivity: 0,
+        totalLoad: 0,
         targetDateStr: targetDateStr
       };
     }
@@ -261,8 +261,8 @@ function getWeeklyChartData() {
     if(weekData.averageRestingHeartRate) annualAverages[year].restingHeartRates.push(weekData.averageRestingHeartRate);
     if(weekData.averageSleepScore) annualAverages[year].sleepScores.push(weekData.averageSleepScore);
     if(weekData.averageStress) annualAverages[year].stresses.push(weekData.averageStress);
-    if(weekData.totalActivity) annualAverages[year].totalActivities.push(weekData.totalActivity);
-    if(weekData.totalLoad) annualAverages[year].totalLoads.push(weekData.totalLoad);
+    annualAverages[year].totalActivities.push(weekData.totalActivity);
+    annualAverages[year].totalLoads.push(weekData.totalLoad);
 
     if (!targetEventPeriodAverages[weekData.targetDateStr]) {
       targetEventPeriodAverages[weekData.targetDateStr] = {
@@ -277,8 +277,8 @@ function getWeeklyChartData() {
     if(weekData.averageRestingHeartRate) targetEventPeriodAverages[weekData.targetDateStr].restingHeartRates.push(weekData.averageRestingHeartRate);
     if(weekData.averageSleepScore) targetEventPeriodAverages[weekData.targetDateStr].sleepScores.push(weekData.averageSleepScore);
     if(weekData.averageStress) targetEventPeriodAverages[weekData.targetDateStr].stresses.push(weekData.averageStress);
-    if(weekData.totalActivity) targetEventPeriodAverages[weekData.targetDateStr].totalActivities.push(weekData.totalActivity);
-    if(weekData.totalLoad) targetEventPeriodAverages[weekData.targetDateStr].totalLoads.push(weekData.totalLoad);
+    targetEventPeriodAverages[weekData.targetDateStr].totalActivities.push(weekData.totalActivity);
+    targetEventPeriodAverages[weekData.targetDateStr].totalLoads.push(weekData.totalLoad);
   }
 
   for (const year in annualAverages) {
@@ -389,7 +389,7 @@ function timeToSeconds(time) {
 
 function calculateAverage(arr) {
   if (arr.length === 0) return null;
-  const validNumbers = arr.filter(Number.isFinite);
+  const validNumbers = arr.filter(num => num !== null && num !== undefined && !isNaN(num));
   if (validNumbers.length === 0) return null;
   const sum = validNumbers.reduce((a, b) => a + b, 0);
   return sum / validNumbers.length;
