@@ -9,9 +9,10 @@ import requests
 # Required libraries for Google Drive API
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload, HttpRequest
+from google.auth.transport.requests import Request
 
 # Required scopes for Google Drive API
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
+SCOPES = ['https://www.googleapis.com/auth/drive']
 
 def build_drive_service_locally():
     try:
@@ -27,6 +28,10 @@ def build_drive_service_locally():
         if os.path.exists('token.json'):
             creds = Credentials.from_authorized_user_file('token.json', SCOPES)
 
+        # Refresh the credentials if they are expired or invalid
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+
         # Raise exception if credentials are missing or invalid        
         if not creds or not creds.valid:
             raise Exception("Invalid or missing credentials. Please authenticate locally using token.json.")
@@ -35,6 +40,9 @@ def build_drive_service_locally():
         return build('drive', 'v3', credentials=creds)
     except ImportError as e:
         raise ImportError("Missing required libraries for local execution. Install `dotenv` and `google-auth-oauthlib`.")
+    except Exception as e:
+        print(f"Error in build_drive_service_locally: {e}")
+        raise
 
 def get_metadata_server_token():
     metadata_url = "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
@@ -103,6 +111,30 @@ def write_csv(drive_service, file_id, data, fieldnames):
                               resumable=True)
     drive_service.files().update(fileId=file_id, media_body=media).execute()
 
+def update_activity_training_load(client, existing_data, date_str):
+    try:
+        # Fetch activities for the current date
+        activities = client.get_activities_by_date(date_str, date_str)
+        
+        # Filter activities by type
+        filtered_activities = [
+            activity for activity in activities
+            if activity["activityType"]["typeKey"] in ["lap_swimming", "swimming", "cycling", "indoor_cycling", "running", "multi_sport"]
+        ]
+
+        # Calculate total activityTrainingLoad for the date
+        total_load = 0
+        for activity in filtered_activities:
+            activity_load = activity.get("activityTrainingLoad", 0)
+            total_load += activity_load
+
+        # Update existing data with activityTrainingLoad
+        if date_str in existing_data:
+            existing_data[date_str]['activityTrainingLoad'] = total_load
+
+    except Exception as e:
+        print(f"Error in update_activity_training_load: {e}")
+
 def main():
     # Build the Drive API service
     drive_service = build_drive_service()
@@ -169,11 +201,14 @@ def main():
                 'weight': weight
             }
 
+            # Update activityTrainingLoad for the current date
+            update_activity_training_load(client, existing_data, date_str)
+
             # Move to the next date
             current_date += datetime.timedelta(days=1)
 
         # Write the updated data back to Google Drive
-        fieldnames = ['date', 'restingHeartRate', 'sleepScore', 'stress', 'bodyBatteryHigh', 'bodyBatteryLow', 'weight']
+        fieldnames = ['date', 'restingHeartRate', 'sleepScore', 'stress', 'bodyBatteryHigh', 'bodyBatteryLow', 'weight', 'activityTrainingLoad']
         write_csv(drive_service, file_id, existing_data, fieldnames)
 
         print("Data extraction complete. Results saved in Google Drive CSV file.")
