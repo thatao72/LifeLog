@@ -367,15 +367,12 @@
       function updateActivityDataset() {
         const isEPOC = showEPOCRadio.checked;
         const activityDataset = myChart.data.datasets.find(dataset => dataset.label === 'Total Activities');
-        const averageActivityDataset = myChart.data.datasets.find(dataset => dataset.label.includes('Average Total Activities'));
+        const annualAverageActivityDataset = myChart.data.datasets.find(dataset => dataset.label === 'Annual Average Total Activities');
+        const eventAverageActivityDataset = myChart.data.datasets.find(dataset => dataset.label === 'Event Average Total Activities');
 
-        if (activityDataset) {
-          activityDataset.data = isEPOC ? chartData.totalLoads : chartData.totalActivities;
-        }
-
-        if (averageActivityDataset) {
-          averageActivityDataset.data = isEPOC ? (annualAverageRadio.checked ? chartData.totalLoadsStepLineData : chartData.totalLoadsTargetEventPeriodLineData) : (annualAverageRadio.checked ? chartData.totalActivitiesStepLineData : chartData.totalActivitiesTargetEventPeriodLineData);
-        }
+        activityDataset && (activityDataset.data = isEPOC ? chartData.totalLoads : chartData.totalActivities);
+        annualAverageActivityDataset && (annualAverageActivityDataset.data = isEPOC ? chartData.totalLoadsStepLineData : chartData.totalActivitiesStepLineData);
+        eventAverageActivityDataset && (eventAverageActivityDataset.data = isEPOC ? chartData.totalLoadsTargetEventPeriodLineData : chartData.totalActivitiesTargetEventPeriodLineData);
 
         myChart.update();
       }
