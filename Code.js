@@ -149,7 +149,8 @@ function getWeeklyChartData() {
       stress: parseFloat(healthRow[3]),
       bodyBatteryHigh: parseFloat(healthRow[4]),
       bodyBatteryLow: parseFloat(healthRow[5]),
-      weight: parseFloat(healthRow[6])
+      weight: parseFloat(healthRow[6]),
+      activityTrainingLoad: parseFloat(healthRow[7])
     };
   }
 
@@ -211,6 +212,7 @@ function getWeeklyChartData() {
         averageBodyBatteryLow: null,
         averageWeight: null,
         totalActivity: null,
+        totalLoad: null,
         targetDateStr: targetDateStr
       };
     }
@@ -229,6 +231,7 @@ function getWeeklyChartData() {
       (healthDataForDate.bodyBatteryHigh) && weeklyHealthData[weekStr].bodyBatteryHighs.push(healthDataForDate.bodyBatteryHigh);
       (healthDataForDate.bodyBatteryLow) && weeklyHealthData[weekStr].bodyBatteryLows.push(healthDataForDate.bodyBatteryLow);
       (healthDataForDate.weight) && weeklyHealthData[weekStr].weights.push(healthDataForDate.weight);
+      (healthDataForDate.activityTrainingLoad) && (weeklyHealthData[weekStr].totalLoad += healthDataForDate.activityTrainingLoad / 1000);
     }
   });
 
@@ -251,20 +254,23 @@ function getWeeklyChartData() {
         restingHeartRates: [],
         sleepScores: [],
         stresses: [],
-        totalActivities: []
+        totalActivities: [],
+        totalLoads: []
       };
     }
     if(weekData.averageRestingHeartRate) annualAverages[year].restingHeartRates.push(weekData.averageRestingHeartRate);
     if(weekData.averageSleepScore) annualAverages[year].sleepScores.push(weekData.averageSleepScore);
     if(weekData.averageStress) annualAverages[year].stresses.push(weekData.averageStress);
     if(weekData.totalActivity) annualAverages[year].totalActivities.push(weekData.totalActivity);
+    if(weekData.totalLoad) annualAverages[year].totalLoads.push(weekData.totalLoad);
 
     if (!targetEventPeriodAverages[weekData.targetDateStr]) {
       targetEventPeriodAverages[weekData.targetDateStr] = {
         restingHeartRates: [],
         sleepScores: [],
         stresses: [],
-        totalActivities: []
+        totalActivities: [],
+        totalLoads: []
       };
     }
 
@@ -272,6 +278,7 @@ function getWeeklyChartData() {
     if(weekData.averageSleepScore) targetEventPeriodAverages[weekData.targetDateStr].sleepScores.push(weekData.averageSleepScore);
     if(weekData.averageStress) targetEventPeriodAverages[weekData.targetDateStr].stresses.push(weekData.averageStress);
     if(weekData.totalActivity) targetEventPeriodAverages[weekData.targetDateStr].totalActivities.push(weekData.totalActivity);
+    if(weekData.totalLoad) targetEventPeriodAverages[weekData.targetDateStr].totalLoads.push(weekData.totalLoad);
   }
 
   for (const year in annualAverages) {
@@ -279,7 +286,8 @@ function getWeeklyChartData() {
       restingHeartRate: calculateAverage(annualAverages[year].restingHeartRates),
       sleepScore: calculateAverage(annualAverages[year].sleepScores),
       stress: calculateAverage(annualAverages[year].stresses),
-      totalActivity: calculateAverage(annualAverages[year].totalActivities)
+      totalActivity: calculateAverage(annualAverages[year].totalActivities),
+      totalLoad: calculateAverage(annualAverages[year].totalLoads)
     };
   }
 
@@ -288,7 +296,8 @@ function getWeeklyChartData() {
       restingHeartRate: calculateAverage(targetEventPeriodAverages[targetDateStr].restingHeartRates),
       sleepScore: calculateAverage(targetEventPeriodAverages[targetDateStr].sleepScores),
       stress: calculateAverage(targetEventPeriodAverages[targetDateStr].stresses),
-      totalActivity: calculateAverage(targetEventPeriodAverages[targetDateStr].totalActivities)
+      totalActivity: calculateAverage(targetEventPeriodAverages[targetDateStr].totalActivities),
+      totalLoad: calculateAverage(targetEventPeriodAverages[targetDateStr].totalLoads)
     };
   }
 
@@ -301,14 +310,17 @@ function getWeeklyChartData() {
     bodyBatteryLows: [],
     weights: [],
     totalActivities: [],
+    totalLoads: [],
     heartRateStepLineData: [],
     sleepScoreStepLineData: [],
     stressStepLineData: [],
     totalActivitiesStepLineData: [],
+    totalLoadsStepLineData: [],
     heartRateTargetEventPeriodLineData: [],
     sleepScoreTargetEventPeriodLineData: [],
     stressTargetEventPeriodLineData: [],
     totalActivitiesTargetEventPeriodLineData: [],
+    totalLoadsTargetEventPeriodLineData: [],
     weeksEndingOnTargetDate: weeksEndingOnTargetDate,
     weeksEndingOnYearEnd: weeksEndingOnYearEnd
   };
@@ -324,17 +336,20 @@ function getWeeklyChartData() {
     chartData.bodyBatteryLows.push(weekData.averageBodyBatteryLow);
     chartData.weights.push(weekData.averageWeight);
     chartData.totalActivities.push(weekData.totalActivity);
+    chartData.totalLoads.push(weekData.totalLoad);
 
     const year = new Date(weekStr.split(' - ')[1]).getFullYear();
     chartData.heartRateStepLineData.push(annualAverages[year].restingHeartRate);
     chartData.sleepScoreStepLineData.push(annualAverages[year].sleepScore);
     chartData.stressStepLineData.push(annualAverages[year].stress);
     chartData.totalActivitiesStepLineData.push(annualAverages[year].totalActivity);
+    chartData.totalLoadsStepLineData.push(annualAverages[year].totalLoad);
 
     chartData.heartRateTargetEventPeriodLineData.push(targetEventPeriodAverages[weekData.targetDateStr].restingHeartRate);
     chartData.sleepScoreTargetEventPeriodLineData.push(targetEventPeriodAverages[weekData.targetDateStr].sleepScore);
     chartData.stressTargetEventPeriodLineData.push(targetEventPeriodAverages[weekData.targetDateStr].stress);
     chartData.totalActivitiesTargetEventPeriodLineData.push(targetEventPeriodAverages[weekData.targetDateStr].totalActivity);
+    chartData.totalLoadsTargetEventPeriodLineData.push(targetEventPeriodAverages[weekData.targetDateStr].totalLoad);
   }
 
   const jsonString = JSON.stringify(chartData);
