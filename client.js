@@ -14,9 +14,6 @@ function displayData(weeklyData) {
       const monday = new Date(mondayStr);
       const sunday = new Date(sundayStr);
 
-      console.log("today", today);
-      console.log("monday", monday);
-      console.log("sunday", sunday);
       if (today >= monday && today <= sunday) {
         shouldShow = true;
         break;
@@ -41,16 +38,15 @@ function displayData(weeklyData) {
       tableData.push(week);
     }
 
-    console.log("tableData", tableData)
-    new Tabulator("#table-" + safeTargetDateId, {
+    console.log("tableData", tableData);
+    const table = new Tabulator("#table-" + safeTargetDateId, {
       data: tableData,
       layout: "fitData",
       columns: [
         { title: "Week", field: "week", width: 180 },
-        { title: "Countdown", field: "countdown", sorter:"number" },
+        { title: "Countdown", field: "countdown", sorter: "number" },
         {
           title: "Activity",
-          field: "activity",
           formatter: function(cell) { // Custom formatter for activity bubbles
             let activityBubbles = "";
             const data = cell.getRow().getData();
@@ -66,7 +62,6 @@ function displayData(weeklyData) {
         },
         {
           title: "Total Activity",
-          field: "totalActivity",
           formatter: "html", // Allow HTML
           formatter: function(cell) {
             const data = cell.getRow().getData();
@@ -103,13 +98,19 @@ function displayData(weeklyData) {
             }
             return eventBubbles;
           }
-        }        
-      ],
+        }
+      ]
+    });
+
+    // Add a listener for the tableBuilt event
+    table.on("tableBuilt", function() {
+      table.redraw(true); // Recalculate column widths after the table is fully built
     });
 
     h2.addEventListener("click", function() {
       const tableContainer = document.getElementById("table-container-" + safeTargetDateId);
       tableContainer.style.display = tableContainer.style.display === "none" ? "block" : "none";
+      table.redraw(true); // Recalculate column widths when the table becomes visible
     });
   }
 }
@@ -119,6 +120,6 @@ function formatTime(time) {
 
   const h = Math.floor(seconds / 3600).toString();
   const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-
+    
   return `${h}:${m}`;
 }
