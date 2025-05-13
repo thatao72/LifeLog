@@ -74,7 +74,7 @@
           <label><input type="radio" name="activityType" id="showEPOC" value="EPOC" checked> EPOC</label>
           <label><input type="radio" name="activityType" id="showIME" value="IME"> IME</label>
         </div>
-        <label><input type="checkbox" id="showAveragesToggle"> Show Averages</label>
+        <label><input type="checkbox" id="showAveragesToggle" checked> Show Averages</label>
         <div class="radio-buttons">
           <label><input type="radio" name="averageType" id="targetEventAverageRadio" value="targetEvent" checked> Target Event Period</label>
           <label><input type="radio" name="averageType" id="annualAverageRadio" value="annual"> Annual</label>
@@ -119,7 +119,7 @@
               pointRadius: 0,
               yAxisID: 'y1',
               type: 'line',
-              hidden: true
+              hidden: false
             },            
             {
               label: 'Annual Average Resting Heart Rate',
@@ -151,7 +151,7 @@
               pointRadius: 0,
               yAxisID: 'y1',
               type: 'line',
-              hidden: true
+              hidden: false
             },            
             {
               label: 'Annual Average Sleep Score',
@@ -183,7 +183,7 @@
               pointRadius: 0,
               yAxisID: 'y1',
               type: 'line',
-              hidden: true
+              hidden: false
             },
             {
               label: 'Annual Average Stress',
@@ -250,7 +250,7 @@
               pointRadius: 0,
               yAxisID: 'y2',
               type: 'line',
-              hidden: true
+              hidden: false
             }
           ]
         },
@@ -295,9 +295,8 @@
           },
           weeksEndingOnTargetDate: chartData.weeksEndingOnTargetDate,
           weeksEndingOnYearEnd: chartData.weeksEndingOnYearEnd,
-          showTargetLines: false,
           showYearEndLines: false,
-          showTargetEventLines: false
+          showTargetEventLines: true
         }
       });
 
