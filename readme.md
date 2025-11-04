@@ -15,20 +15,20 @@
 # 4. Access the file via unpkg (in html code e.g. in index.html):
 #    https://unpkg.com/<package-name>@<version>/client.js
 
-# how to deploy main.py as Google Cloud Run
-## run Docker with VSCode Container extension
-- Use Dockerfile to define what to do
-- Run Docker.app (double click the file in Application directory)
-- Open Command Palette → “Container Images: Build Image…”
-- Select Dockerfile path, enter image name (e.g. lifelog:local)
-- Wait for build output in VS Code Terminal/Output.
-
 # files for main.py local run
 - .env : all environment variables
 - client_secret_.json : downloaded secret for Google Drive
 - token.json : token to access to files on Google Drive (past uploaded data)
 - auth.py : generate token.json with client_secret_.json
 -- legacy files: garminConnectActivities.py and filtered_activities.csv
+
+# how to deploy main.py as Google Cloud Run
+## run Docker with VSCode Container extension
+- Use Dockerfile to define what to do
+- Run Docker.app (double click the file in Application directory)
+- Open Command Palette → “Container Images: Build Image…”
+- Select Dockerfile path, enter FULL Artifact Registry image name (e.g. asia-northeast1-docker.pkg.dev/importgarminconnect/import-garmin-connect/import-garmin-connect:latest)
+- Wait for build output in VS Code Terminal/Output.
 
 # Cloud Run Job Deployment via Google Cloud Console
 
