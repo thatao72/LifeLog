@@ -16,6 +16,7 @@
 #    https://unpkg.com/<package-name>@<version>/client.js
 
 # files for main.py local run
+Usually, local token.json is expired and you need to rerun auth.py after removeing token.json (>rm token.json; >python auth.py)
 - .env : all environment variables
 - client_secret_.json : downloaded secret for Google Drive
 - token.json : token to access to files on Google Drive (past uploaded data)
