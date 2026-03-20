@@ -1,5 +1,6 @@
 from garminconnect import Garmin
 import datetime
+from garth import client
 import pytz
 import csv
 import io
@@ -135,33 +136,35 @@ def update_activity_training_load(client, existing_data, date_str):
     except Exception as e:
         print(f"Error in update_activity_training_load: {e}")
 
-def download_tokens(drive_service, file_id, token_dir):
-    """Downloads the token directory from Google Drive to the local /tmp folder."""
+def download_tokens(drive_service, file_id, client):
+    """Downloads the session string from Drive and loads it into the Garmin client."""
     try:
-        if not os.path.exists(token_dir):
-            os.makedirs(token_dir)
-        
         request = drive_service.files().get_media(fileId=file_id)
         fh = io.BytesIO()
         downloader = MediaIoBaseDownload(fh, request)
         done = False
-        while done is False:
-            status, done = downloader.next_chunk()
+        while not done:
+            _, done = downloader.next_chunk()
         
-        # Garth (used by garminconnect) expects a directory or a specific file
-        with open(os.path.join(token_dir, "tokens.json"), "wb") as f:
-            f.write(fh.getvalue())
-        print("Tokens downloaded successfully.")
+        token_data = fh.getvalue().decode('utf-8')
+        if token_data:
+            client.garth.loads(token_data)
+            print("Session tokens loaded successfully from Google Drive.")
+            return True
     except Exception as e:
-        print(f"No existing tokens found or error downloading: {e}")
+        print(f"No valid tokens found in Drive or download failed: {e}")
+    return False
 
-def upload_tokens(drive_service, file_id, token_dir):
-    """Uploads the local tokens back to Google Drive for the next run."""
-    token_path = os.path.join(token_dir, "tokens.json")
-    if os.path.exists(token_path):
-        media = MediaIoBaseUpload(token_path, mimetype='application/json', resumable=True)
+def upload_tokens(drive_service, file_id, client):
+    """Serializes the current Garmin session and uploads it to Google Drive."""
+    try:
+        token_base64 = client.garth.dumps()
+        fh = io.BytesIO(token_base64.encode('utf-8'))
+        media = MediaIoBaseUpload(fh, mimetype='text/plain', resumable=True)
         drive_service.files().update(fileId=file_id, media_body=media).execute()
-        print("Tokens uploaded to Drive.")
+        print("New session tokens uploaded to Google Drive.")
+    except Exception as e:
+        print(f"Failed to upload tokens to Drive: {e}")
 
 def main():
     # Build the Drive API service
@@ -173,28 +176,24 @@ def main():
     garmin_token_file_id = os.environ.get("GARMIN_TOKEN_FILE_ID") # New Env Var
     file_id = os.environ.get("GOOGLE_DRIVE_FILE_ID")
 
-    # Setup Garmin Token Storage in Cloud Run's ephemeral /tmp directory
-    token_dir = "/tmp/garmin_tokens"
-    download_tokens(drive_service, garmin_token_file_id, token_dir)
-
     # Check if required environment variables are set
     if not garmin_username or not garmin_password or not garmin_token_file_id or not file_id:
       raise ValueError("Missing environment variables: GARMIN_USERNAME, GARMIN_PASSWORD, GARMIN_TOKEN_FILE_ID, GOOGLE_DRIVE_FILE_ID")
 
     # Authenticate with Garmin Connect
     client = Garmin(garmin_username, garmin_password)
+    tokens_loaded = download_tokens(drive_service, garmin_token_file_id, client)
 
     try:
-        # Attempt to login using the downloaded tokens
-        client.login(token_dir)
-        print("Logged in using existing session tokens.")
+        if tokens_loaded:
+            client.login() # Attempt to resume session
+            print("Logged in via resumed session.")
+        else:
+            raise Exception("No tokens available.")
     except Exception:
-        # If tokens are expired or missing, perform a full login
         print("Session expired or missing. Performing full login...")
-        client.login()
-        # Save the new tokens locally and upload them to Drive
-        client.garth.dump(token_dir)
-        upload_tokens(drive_service, garmin_token_file_id, token_dir)
+        client.login() # Full credentials login
+        upload_tokens(drive_service, garmin_token_file_id, client)
 
     # Set the start and end dates for data extraction
     start_date = datetime.date(2022, 4, 25)  # Or get from env variable if needed
