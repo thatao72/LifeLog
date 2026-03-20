@@ -30,6 +30,7 @@ Usually, local token.json is expired and you need to rerun auth.py after removei
 - Open Command Palette → “Container Images: Build Image…”
 - Select Dockerfile path, enter FULL Artifact Registry image name (e.g. asia-northeast1-docker.pkg.dev/importgarminconnect/import-garmin-connect/import-garmin-connect:latest)
 - Wait for build output in VS Code Terminal/Output.
+- Then Push image by clicking on latest IMAGES. Sometime auth expired and you will be asked to run "gcloud auth login".
 
 # Cloud Run Job Deployment via Google Cloud Console
 
