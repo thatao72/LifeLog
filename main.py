@@ -16,6 +16,9 @@ from google.auth.transport.requests import Request
 # Required scopes for Google Drive API
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
+# Define the temporary path in the Cloud Run instance
+TOKEN_DIR = "/tmp/garmin_tokens"
+
 def build_drive_service_locally():
     try:
         # Import dotenv and google.oauth2.credentials dynamically (only for local use)
@@ -137,9 +140,6 @@ def update_activity_training_load(client, existing_data, date_str):
     except Exception as e:
         print(f"Error in update_activity_training_load: {e}")
 
-# Define the temporary path in the Cloud Run instance
-TOKEN_DIR = "/tmp/garmin_tokens"
-
 def download_tokens_to_dir(drive_service, file_id):
     """Downloads the combined token data and expands it into the TOKEN_DIR."""
     try:
@@ -220,13 +220,13 @@ def main():
         print(f"Fetching new data from {start_date} to {end_date}")
 
         # Fetch body composition data for the new date range
-        body_composition_data = client.get_body_composition(start_date, end_date)
+        body_composition_data = client.get_body_composition(start_date.isoformat(), end_date.isoformat())
         weight_dict = {item['calendarDate']: item['weight'] for item in body_composition_data.get('dateWeightList', [])}
 
         # Fetch sleep and user summary data for the new date range
         current_date = start_date
         while current_date <= end_date:
-            date_str = current_date.strftime("%Y-%m-%d")
+            date_str = current_date.isoformat()
             print(f"\nFetching data for {date_str}")
 
             # Fetch sleep data and user summary data for the current date
