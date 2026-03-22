@@ -202,8 +202,10 @@ def main():
         client.login(TOKEN_DIR) # Garth will look for the .json files here
     else:
         client.login() # Fallback to password
-        client.garth.dump(TOKEN_DIR) # Save new tokens to the dir
-        upload_tokens_from_dir(drive_service, garmin_token_file_id) # Push to Drive
+
+    # No matter what, we save the tokens back to Drive at the end of the run to ensure they are updated
+    client.garth.dump(TOKEN_DIR) # Save new tokens to the dir
+    upload_tokens_from_dir(drive_service, garmin_token_file_id) # Push to Drive
 
     # Set the start and end dates for data extraction
     start_date = datetime.date(2022, 4, 25)  # Or get from env variable if needed
