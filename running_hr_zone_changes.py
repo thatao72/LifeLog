@@ -141,23 +141,22 @@ def collect_snapshots(
 
 
 def changed_snapshots(snapshots: Iterable[ZoneSnapshot]) -> list[ZoneSnapshot]:
-    """Keep the first snapshot and each subsequent threshold change.
+    """Return dates whose final threshold set differs from the preceding run date.
 
-    Multiple runs on one date are compared in chronological order. If Garmin
-    reports more than one threshold set on that date, only the day's final set
-    is emitted, because the requested output is date-based.
+    The first date is a comparison baseline and is not emitted. For multiple
+    runs on the same date, the final activity is treated as that day's value.
     """
+    final_by_date: dict[dt.date, ZoneSnapshot] = {}
+    for snapshot in snapshots:
+        final_by_date[snapshot.activity_date] = snapshot
+
     changes: list[ZoneSnapshot] = []
     previous: tuple[int, ...] | None = None
-    pending_by_date: dict[dt.date, ZoneSnapshot] = {}
-
-    for snapshot in snapshots:
-        if snapshot.thresholds != previous:
-            pending_by_date[snapshot.activity_date] = snapshot
-            previous = snapshot.thresholds
-
-    for date in sorted(pending_by_date):
-        changes.append(pending_by_date[date])
+    for date in sorted(final_by_date):
+        snapshot = final_by_date[date]
+        if previous is not None and snapshot.thresholds != previous:
+            changes.append(snapshot)
+        previous = snapshot.thresholds
     return changes
 
 
