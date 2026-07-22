@@ -52,23 +52,23 @@ class ChangeDetectionTest(unittest.TestCase):
     def snapshot(self, day, thresholds, activity_id):
         return ZoneSnapshot(activity_id, dt.date.fromisoformat(day), "Run", thresholds)
 
-    def test_keeps_initial_snapshot_and_changes_only(self):
+    def test_excludes_baseline_and_unchanged_dates(self):
         snapshots = [
             self.snapshot("2022-05-02", (100, 120, 140, 160, 180), 1),
             self.snapshot("2022-05-05", (100, 120, 140, 160, 180), 2),
             self.snapshot("2022-05-08", (101, 121, 141, 161, 181), 3),
         ]
         result = changed_snapshots(snapshots)
-        self.assertEqual([item.activity_id for item in result], [1, 3])
+        self.assertEqual([item.activity_id for item in result], [3])
 
-    def test_same_day_uses_final_changed_snapshot(self):
+    def test_same_day_uses_final_snapshot(self):
         snapshots = [
             self.snapshot("2022-05-02", (100, 120, 140, 160, 180), 1),
             self.snapshot("2022-05-08", (101, 121, 141, 161, 181), 2),
             self.snapshot("2022-05-08", (102, 122, 142, 162, 182), 3),
         ]
         result = changed_snapshots(snapshots)
-        self.assertEqual([item.activity_id for item in result], [1, 3])
+        self.assertEqual([item.activity_id for item in result], [3])
 
     def test_csv_columns(self):
         stream = io.StringIO()
