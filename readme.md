@@ -64,7 +64,7 @@ You will be taken to the "Create job" form. Configure the following core setting
 Expand the **Container, Networking, Security** section to set runtime behavior:
 
 * **Tasks:** Define the number of parallel instances. Set this to **`1`** for a standard, sequential run, or higher for parallel processing.
-* **CPU & Memory:** Allocate the necessary **CPU** and **Memory** resources for your script's execution.
+* **CPU & Memory:** Allocate the necessary **CPU** and **Memory** resources for your Python script's execution.
 * **Timeout:** Set the maximum duration a single task can run before cancellation (maximum of 24 hours).
 * **Max Retries:** Configure how many times a task should automatically restart if it fails.
 * **Environment Variables:** If your Python code requires configuration at runtime (like database connection strings or input paths), define them here as **Key/Value** pairs.
